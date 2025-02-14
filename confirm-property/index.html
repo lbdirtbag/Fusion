@@ -18,7 +18,7 @@
             background-color: #f9f9f9;
             padding: 0;
             margin: 0;
-            height: 100vh; /* Prevent scrolling */
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -26,7 +26,7 @@
         }
 
         .container {
-            width: 80%;
+            width: 90%;
             max-width: 500px;
             background: white;
             padding: 20px;
@@ -35,30 +35,34 @@
         }
 
         h1 {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 700;
             color: #333;
+            margin-bottom: 10px;
         }
 
         p {
             font-size: 1rem;
             color: #666;
-            margin-top: 8px;
+            margin-top: 5px;
             line-height: 1.4;
         }
 
-        /* Map Styles */
         #map {
             width: 100%;
-            height: 300px;
+            height: 350px;
             border-radius: 10px;
+            margin-top: 10px;
         }
 
         .address-container {
             font-size: 1rem;
-            margin-top: 10px;
             font-weight: 600;
             color: #333;
+            margin-top: 10px;
+            background: #f0f0f0;
+            padding: 8px;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -81,9 +85,8 @@
         let map, marker;
 
         function initMap() {
-            // Get address from URL parameter (passed from previous form step)
-            const urlParams = new URLSearchParams(window.location.search);
-            const address = urlParams.get("address") || "Mesa, AZ"; // Default if no address is passed
+            // Get address from session storage (saved in "Find Your Roof" page)
+            let address = sessionStorage.getItem("selectedAddress") || "Mesa, AZ"; // Default location
 
             document.getElementById("selected-address").innerText = address;
 
@@ -105,13 +108,14 @@
                         draggable: true
                     });
 
-                    // Listen for pin movement
+                    // Listen for pin movement and store new coordinates
                     marker.addListener("dragend", function() {
                         const newPos = marker.getPosition();
                         console.log("New Pin Location:", newPos.lat(), newPos.lng());
-                        // Update Tally form link with new coordinates
-                        let tallyForm = `https://tally.so/r/your-tally-form-url?lat=${newPos.lat()}&lng=${newPos.lng()}&address=${encodeURIComponent(address)}`;
-                        window.location.href = tallyForm;
+
+                        // Save new coordinates in session storage
+                        sessionStorage.setItem("selectedLat", newPos.lat());
+                        sessionStorage.setItem("selectedLng", newPos.lng());
                     });
 
                 } else {
@@ -120,6 +124,9 @@
                 }
             });
         }
+
+        // Load map on page load
+        window.onload = initMap;
     </script>
 
 </body>
