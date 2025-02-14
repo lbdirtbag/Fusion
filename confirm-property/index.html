@@ -64,6 +64,10 @@
             padding: 8px;
             border-radius: 5px;
         }
+
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -77,20 +81,22 @@
 
         <!-- Display Selected Address -->
         <div class="address-container" id="selected-address">
-            Loading address...
+            Address: <span id="confirmed-address">Loading...</span>
         </div>
+
+        <!-- Hidden Input Fields for Tally -->
+        <input type="hidden" id="tally-address">
+        <input type="hidden" id="tally-lat">
+        <input type="hidden" id="tally-lng">
     </div>
 
     <script>
         let map, marker;
 
         function initMap() {
-            // Get address from session storage (saved in "Find Your Roof" page)
-            let address = sessionStorage.getItem("selectedAddress") || "Mesa, AZ"; // Default location
+            let address = sessionStorage.getItem("selectedAddress") || "Mesa, AZ";
+            document.getElementById("confirmed-address").innerText = address;
 
-            document.getElementById("selected-address").innerText = address;
-
-            // Initialize Google Maps
             const geocoder = new google.maps.Geocoder();
             geocoder.geocode({ address: address }, function(results, status) {
                 if (status === "OK") {
@@ -108,21 +114,35 @@
                         draggable: true
                     });
 
-                    // Listen for pin movement and store new coordinates
+                    updateTallyFields(address, location.lat(), location.lng());
+
+                    // Listen for pin movement
                     marker.addListener("dragend", function() {
                         const newPos = marker.getPosition();
-                        console.log("New Pin Location:", newPos.lat(), newPos.lng());
-
-                        // Save new coordinates in session storage
-                        sessionStorage.setItem("selectedLat", newPos.lat());
-                        sessionStorage.setItem("selectedLng", newPos.lng());
+                        geocoder.geocode({ location: newPos }, function(results, status) {
+                            if (status === "OK") {
+                                let newAddress = results[0].formatted_address;
+                                document.getElementById("confirmed-address").innerText = newAddress;
+                                updateTallyFields(newAddress, newPos.lat(), newPos.lng());
+                            }
+                        });
                     });
 
                 } else {
                     console.error("Geocode error: " + status);
-                    document.getElementById("selected-address").innerText = "Address not found";
+                    document.getElementById("confirmed-address").innerText = "Address not found";
                 }
             });
+        }
+
+        function updateTallyFields(address, lat, lng) {
+            sessionStorage.setItem("selectedAddress", address);
+            sessionStorage.setItem("selectedLat", lat);
+            sessionStorage.setItem("selectedLng", lng);
+
+            document.getElementById("tally-address").value = address;
+            document.getElementById("tally-lat").value = lat;
+            document.getElementById("tally-lng").value = lng;
         }
 
         // Load map on page load
