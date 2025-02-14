@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Your Property | Fusion</title>
+
+    <!-- Google Fonts: Exo -->
+    <link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCFcB4m8ZvYHspksNkxNW0riR1IRissTQ&callback=initMap&libraries=places" async defer></script>
+
+    <style>
+        html, body {
+            font-family: 'Exo', sans-serif;
+            text-align: center;
+            background-color: #f9f9f9;
+            padding: 0;
+            margin: 0;
+            height: 100vh; /* Prevent scrolling */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 500px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        p {
+            font-size: 1rem;
+            color: #666;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        /* Map Styles */
+        #map {
+            width: 100%;
+            height: 300px;
+            border-radius: 10px;
+        }
+
+        .address-container {
+            font-size: 1rem;
+            margin-top: 10px;
+            font-weight: 600;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Confirm Your Property</h1>
+        <p>If the pin isn't already on your roof, click to place it. This helps us understand what kind of solar system will work best for you and improves the accuracy of your quotes.</p>
+
+        <!-- Google Map -->
+        <div id="map"></div>
+
+        <!-- Display Selected Address -->
+        <div class="address-container" id="selected-address">
+            Loading address...
+        </div>
+    </div>
+
+    <script>
+        let map, marker;
+
+        function initMap() {
+            // Get address from URL parameter (passed from previous form step)
+            const urlParams = new URLSearchParams(window.location.search);
+            const address = urlParams.get("address") || "Mesa, AZ"; // Default if no address is passed
+
+            document.getElementById("selected-address").innerText = address;
+
+            // Initialize Google Maps
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ address: address }, function(results, status) {
+                if (status === "OK") {
+                    const location = results[0].geometry.location;
+
+                    map = new google.maps.Map(document.getElementById("map"), {
+                        center: location,
+                        zoom: 18,
+                        mapTypeId: "satellite"
+                    });
+
+                    marker = new google.maps.Marker({
+                        position: location,
+                        map: map,
+                        draggable: true
+                    });
+
+                    // Listen for pin movement
+                    marker.addListener("dragend", function() {
+                        const newPos = marker.getPosition();
+                        console.log("New Pin Location:", newPos.lat(), newPos.lng());
+                        // Update Tally form link with new coordinates
+                        let tallyForm = `https://tally.so/r/your-tally-form-url?lat=${newPos.lat()}&lng=${newPos.lng()}&address=${encodeURIComponent(address)}`;
+                        window.location.href = tallyForm;
+                    });
+
+                } else {
+                    console.error("Geocode error: " + status);
+                    document.getElementById("selected-address").innerText = "Address not found";
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
