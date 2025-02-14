@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Your Roof | Fusion</title>
+    
+    <!-- Google Fonts: Exo -->
+    <link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Google Places API (for address autocomplete) -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCFcB4m8ZvYHspksNkxNW0riR1IRissTQ&libraries=places"></script>
+
+    <style>
+        body {
+            font-family: 'Exo', sans-serif;
+            text-align: center;
+            background-color: #f9f9f9;
+            padding: 20px;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 500px;
+            margin: 50px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        p {
+            font-size: 1rem;
+            color: #666;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        .input-container {
+            margin-top: 15px;
+            text-align: left;
+        }
+
+        .input-container label {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .input-container input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .fusion-sunroof {
+            font-size: 0.9rem;
+            margin-top: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Find Your Roof</h1>
+        <p>We’ll use an image of your roof to determine the best system design for you. We consider things like the size of your roof, the direction it faces, and more.</p>
+
+        <!-- Address Input Field -->
+        <div class="input-container">
+            <label for="addressInput">Address <span style="color: red;">*</span></label>
+            <input id="addressInput" type="text" placeholder="Enter a location" autocomplete="off">
+        </div>
+
+        <!-- Google Project Sunroof Link (Optional, Can Be Removed) -->
+        <div class="fusion-sunroof">
+            Powered by 
+            <a href="https://www.google.com/get/sunroof" target="_blank" rel="noopener noreferrer">
+                <img src="https://onboarding.energysage.com/img/google-project-sunroof.256368f.png" alt="Google Project Sunroof logo" width="100">
+            </a>
+        </div>
+
+    </div>
+
+    <script>
+        // Google Places Autocomplete
+        function initAutocomplete() {
+            let input = document.getElementById('addressInput');
+            let autocomplete = new google.maps.places.Autocomplete(input);
+
+            // When user selects an address, redirect to Tally form
+            autocomplete.addListener('place_changed', function() {
+                let address = input.value;
+                if (address) {
+                    console.log("User entered address: " + address);
+
+                    // Redirect to Tally form with address auto-filled
+                    let tallyForm = "https://tally.so/r/your-tally-form-url?address=" + encodeURIComponent(address);
+                    window.location.href = tallyForm;
+                }
+            });
+        }
+
+        // Load autocomplete on page load
+        window.onload = initAutocomplete;
+    </script>
+
+</body>
+</html>
