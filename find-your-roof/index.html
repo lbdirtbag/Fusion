@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Find Your Roof | Fusion</title>
-    
+
     <!-- Google Fonts: Exo -->
     <link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;600;700&display=swap" rel="stylesheet">
 
-    <!-- Google Places API (for address autocomplete) -->
+    <!-- Google Maps Places API -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCFcB4m8ZvYHspksNkxNW0riR1IRissTQ&libraries=places"></script>
 
     <style>
@@ -18,15 +18,15 @@
             background-color: #f9f9f9;
             padding: 0;
             margin: 0;
-            height: 100vh; /* Full height to prevent scrolling */
+            height: 100vh; /* Prevent scrolling */
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden; /* Prevent scrolling */
+            overflow: hidden;
         }
 
         .container {
-            width: 80%;
+            width: 90%;
             max-width: 500px;
             background: white;
             padding: 20px;
@@ -49,10 +49,10 @@
 
         .input-container {
             margin-top: 15px;
-            text-align: left; /* Keep label aligned left */
+            text-align: left;
             display: flex;
-            flex-direction: column; /* Stack label and input */
-            align-items: center; /* Center horizontally */
+            flex-direction: column;
+            align-items: center;
         }
 
         .input-container label {
@@ -64,19 +64,24 @@
         }
 
         .input-container input {
-            width: 100%; /* Make sure input fills the container */
-            max-width: 400px; /* Prevent it from stretching too wide */
+            width: 100%;
+            max-width: 400px;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 1rem;
-            text-align: left; /* Align text to the left */
+            text-align: left;
         }
 
-        .fusion-sunroof {
-            font-size: 0.9rem;
+        .address-container {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
             margin-top: 10px;
-            color: #666;
+            background: #f0f0f0;
+            padding: 8px;
+            border-radius: 5px;
+            display: none; /* Hidden until an address is selected */
         }
     </style>
 </head>
@@ -92,32 +97,33 @@
             <input id="addressInput" type="text" placeholder="Enter a location" autocomplete="off">
         </div>
 
-        <!-- Google Project Sunroof Link (Optional, Can Be Removed) -->
-        <div class="fusion-sunroof">
-            Powered by 
-            <a href="https://www.google.com/get/sunroof" target="_blank" rel="noopener noreferrer">
-                <img src="https://onboarding.energysage.com/img/google-project-sunroof.256368f.png" alt="Google Project Sunroof logo" width="100">
-            </a>
+        <!-- Selected Address Display -->
+        <div class="address-container" id="selected-address">
+            Address Selected: <span id="confirmed-address"></span>
         </div>
-
     </div>
 
     <script>
-        // Google Places Autocomplete
         function initAutocomplete() {
-            let input = document.getElementById('addressInput');
+            let input = document.getElementById("addressInput");
+            let confirmedAddress = document.getElementById("confirmed-address");
+            let addressContainer = document.getElementById("selected-address");
             let autocomplete = new google.maps.places.Autocomplete(input);
 
-            // When user selects an address, redirect to Tally form
-            autocomplete.addListener('place_changed', function() {
-                let address = input.value;
-                if (address) {
-                    console.log("User entered address: " + address);
-
-                    // Redirect to Tally form with address auto-filled
-                    let tallyForm = "https://tally.so/r/your-tally-form-url?address=" + encodeURIComponent(address);
-                    window.location.href = tallyForm;
+            // When user selects an address from dropdown
+            autocomplete.addListener("place_changed", function() {
+                let place = autocomplete.getPlace();
+                if (!place.geometry) {
+                    console.error("Error: Address not found.");
+                    return;
                 }
+
+                let address = place.formatted_address;
+                confirmedAddress.textContent = address;
+                addressContainer.style.display = "block"; // Show selected address
+
+                // Save address to session storage for Tally to access
+                sessionStorage.setItem("selectedAddress", address);
             });
         }
 
