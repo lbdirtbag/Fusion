@@ -32,6 +32,10 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         h1 {
@@ -50,7 +54,8 @@
 
         #map {
             width: 100%;
-            height: 350px;
+            height: 250px; /* Default height */
+            max-height: 50vh; /* Adjusts dynamically */
             border-radius: 10px;
             margin-top: 10px;
         }
@@ -65,8 +70,24 @@
             border-radius: 5px;
         }
 
-        .hidden {
-            display: none;
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: 15px;
+            }
+
+            #map {
+                height: 200px; /* Reduce height for mobile */
+                max-height: 40vh;
+            }
+
+            h1 {
+                font-size: 1.4rem;
+            }
+
+            p {
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
@@ -94,7 +115,7 @@
         let map, marker;
 
         function initMap() {
-            let address = sessionStorage.getItem("selectedAddress") || "Mesa, AZ";
+            let address = sessionStorage.getItem("selectedAddress") || "Mesa, AZ"; // Default to Mesa, AZ if no address is found
             document.getElementById("confirmed-address").innerText = address;
 
             const geocoder = new google.maps.Geocoder();
@@ -145,8 +166,20 @@
             document.getElementById("tally-lng").value = lng;
         }
 
-        // Load map on page load
-        window.onload = initMap;
+        function adjustMapHeight() {
+            let mapContainer = document.getElementById("map");
+            let windowHeight = window.innerHeight;
+            
+            // Set map height dynamically
+            let newHeight = Math.min(windowHeight * 0.4, 350); // Max height of 350px
+            mapContainer.style.height = newHeight + "px";
+        }
+
+        window.onload = () => {
+            initMap();
+            adjustMapHeight();
+        };
+        window.onresize = adjustMapHeight;
     </script>
 
 </body>
