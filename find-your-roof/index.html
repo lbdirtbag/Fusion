@@ -87,21 +87,65 @@
 </head>
 <body>
 
-    <div class="container">
-        <h1>Find Your Roof</h1>
-        <p>We’ll use an image of your roof to determine the best system design for you. We consider things like the size of your roof, the direction it faces, and more.</p>
+ <style>
+/* Ensure the main container fills the screen properly */
+.container {
+    min-height: 100vh;  /* Full viewport height */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;  /* Centers content vertically */
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+    overflow: hidden;  /* Prevents content from being cut off */
+}
 
-        <!-- Address Input Field -->
-        <div class="input-container">
-            <label for="addressInput">Address <span style="color: red;">*</span></label>
-            <input id="addressInput" type="text" placeholder="Enter a location" autocomplete="off">
-        </div>
+/* Ensure text doesn't get cut off */
+h1, p {
+    max-width: 90%;
+    margin-bottom: 15px;
+}
 
-        <!-- Selected Address Display -->
-        <div class="address-container" id="selected-address">
-            Address Selected: <span id="confirmed-address"></span>
-        </div>
+/* Address input field */
+.input-container {
+    width: 100%;
+    max-width: 400px;
+    margin-top: 15px;
+}
+
+/* Address container spacing */
+.address-container {
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding-bottom: 60px;  /* Adds space at the bottom */
+    }
+
+    .input-container {
+        max-width: 100%;
+    }
+}
+</style>
+
+<div class="container">
+    <h1>Find Your Roof</h1>
+    <p>We’ll use an image of your roof to determine the best system design for you. We consider things like the size of your roof, the direction it faces, and more.</p>
+
+    <!-- Address Input Field -->
+    <div class="input-container">
+        <label for="addressInput">Address <span style="color: red;">*</span></label>
+        <input id="addressInput" type="text" placeholder="Enter a location" autocomplete="off">
     </div>
+
+    <!-- Selected Address Display -->
+    <div class="address-container" id="selected-address">
+        Address Selected: <span id="confirmed-address"></span>
+    </div>
+</div>
 
     <script>
         function initAutocomplete() {
