@@ -12,16 +12,16 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCFcB4m8ZvYHspksNkxNW0riR1IRissTQ&libraries=places"></script>
 
     <style>
-        /* Reset page styles */
+        /* Reset styles */
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* Full height with no scroll issues */
+        /* Force full viewport height */
         html, body {
             font-family: 'Exo', sans-serif;
             text-align: center;
             background-color: #f9f9f9;
-            height: 100vh; /* Forces the page to take the full viewport height */
-            width: 100vw; /* Ensures full width */
+            height: 100vh; /* Forces full height */
+            width: 100vw; /* Ensures it takes full width */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -29,7 +29,7 @@
             overflow: hidden; /* Prevents scrolling */
         }
 
-        /* Container should fully fit within the iframe */
+        /* Main container */
         .container {
             width: 100%;
             max-width: 500px;
@@ -115,9 +115,6 @@
                 addressContainer.style.display = "block";
 
                 sessionStorage.setItem("selectedAddress", address);
-
-                // Communicate height adjustment to Tally
-                window.parent.postMessage({ type: "tally_resize", height: document.body.scrollHeight }, "*");
             });
         }
 
