@@ -12,26 +12,24 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCFcB4m8ZvYHspksNkxNW0riR1IRissTQ&libraries=places"></script>
 
     <style>
-        /* General Styling */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        /* Reset page styles */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
+        /* Full height with no scroll issues */
         html, body {
             font-family: 'Exo', sans-serif;
             text-align: center;
             background-color: #f9f9f9;
-            min-height: 100vh; /* Prevents vh issues on mobile */
+            height: 100vh; /* Forces the page to take the full viewport height */
+            width: 100vw; /* Ensures full width */
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px; /* Adds spacing on smaller screens */
-            overflow-x: hidden; /* Prevents horizontal scrolling */
+            padding: 0;
+            overflow: hidden; /* Prevents scrolling */
         }
 
-        /* Main Container */
+        /* Container should fully fit within the iframe */
         .container {
             width: 100%;
             max-width: 500px;
@@ -41,27 +39,16 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
-        h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #333;
-        }
+        h1 { font-size: 1.8rem; font-weight: 700; color: #333; }
+        p { font-size: 1rem; color: #666; margin-top: 8px; line-height: 1.4; }
 
-        p {
-            font-size: 1rem;
-            color: #666;
-            margin-top: 8px;
-            line-height: 1.4;
-        }
-
-        /* Input Container */
         .input-container {
             margin-top: 15px;
+            width: 100%;
             text-align: left;
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 100%;
         }
 
         .input-container label {
@@ -77,10 +64,8 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 1rem;
-            text-align: left;
         }
 
-        /* Address Display */
         .address-container {
             font-size: 1rem;
             font-weight: 600;
@@ -89,15 +74,7 @@
             background: #f0f0f0;
             padding: 8px;
             border-radius: 5px;
-            display: none; /* Hidden until address is selected */
-        }
-
-        /* Responsive Tweaks */
-        @media (max-width: 768px) {
-            .container {
-                width: 90%;
-                max-width: 100%;
-            }
+            display: none; /* Hidden until an address is selected */
         }
     </style>
 </head>
@@ -105,7 +82,7 @@
 
     <div class="container">
         <h1>Find Your Roof</h1>
-        <p>We’ll use an image of your roof to determine the best system design for you. We consider things like the size of your roof, the direction it faces, and more.</p>
+        <p>We’ll use an image of your roof to determine the best system design for you.</p>
 
         <!-- Address Input Field -->
         <div class="input-container">
@@ -126,7 +103,6 @@
             let addressContainer = document.getElementById("selected-address");
             let autocomplete = new google.maps.places.Autocomplete(input);
 
-            // When user selects an address from dropdown
             autocomplete.addListener("place_changed", function() {
                 let place = autocomplete.getPlace();
                 if (!place.geometry) {
@@ -136,14 +112,15 @@
 
                 let address = place.formatted_address;
                 confirmedAddress.textContent = address;
-                addressContainer.style.display = "block"; // Show selected address
+                addressContainer.style.display = "block";
 
-                // Save address to session storage for Tally to access
                 sessionStorage.setItem("selectedAddress", address);
+
+                // Communicate height adjustment to Tally
+                window.parent.postMessage({ type: "tally_resize", height: document.body.scrollHeight }, "*");
             });
         }
 
-        // Load autocomplete on page load
         window.onload = initAutocomplete;
     </script>
 
