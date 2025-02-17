@@ -29,19 +29,19 @@
             overflow: hidden;
         }
 
-        /* Main container */
+        /* Main container - FIXED HEIGHT */
         .container {
             width: 100%;
             max-width: 500px;
             background: white;
             padding: 20px;
-            margin-top: 25px;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
             align-items: center;
+            height: 700px; /* Fixed height */
         }
 
         h1 {
@@ -61,8 +61,7 @@
         /* Google Map */
         #map {
             width: 100%;
-            height: 400px; /* Default */
-            max-height: 50vh; /* Responsive max height */
+            height: 300px; /* Adjusted height */
             border-radius: 10px;
             margin-top: 10px;
         }
@@ -82,11 +81,11 @@
             .container {
                 width: 95%;
                 padding: 15px;
+                height: 700px; /* Ensures it fits in mobile */
             }
 
             #map {
-                height: 400px;
-                max-height: 100vh;
+                height: 250px; /* Slightly smaller for mobile */
             }
 
             h1 {
@@ -174,26 +173,16 @@
             document.getElementById("tally-lng").value = lng;
         }
 
-        function adjustMapHeight() {
-            let mapContainer = document.getElementById("map");
-            let windowHeight = window.innerHeight;
-            let newHeight = Math.min(windowHeight * 0.5, 400); // Max height of 400px
-            mapContainer.style.height = newHeight + "px";
-        }
-
         window.onload = () => {
             initMap();
-            adjustMapHeight();
 
             // Notify Tally Form to resize iframe
             if (window.parent) {
                 setTimeout(() => {
-                    window.parent.postMessage({ type: "tally_resize", height: document.body.scrollHeight }, "*");
+                    window.parent.postMessage({ type: "tally_resize", height: 700 }, "*");
                 }, 500);
             }
         };
-
-        window.onresize = adjustMapHeight;
     </script>
 
 </body>
