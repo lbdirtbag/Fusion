@@ -5,25 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Find Your Roof | Solar Estimate</title>
     <style>
-        /* Reset default margins & padding */
+        /* Reset all margins, padding, and box sizing */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        /* Full-page container to center everything */
-        body, html {
+        /* Full-page container */
+        html, body {
             width: 100%;
             height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
+            overflow: hidden; /* Prevent extra space */
             background-color: #f9f9f9;
-            overflow: hidden; /* Prevents unwanted scrolling */
         }
 
-        /* Wrapper ensures proper layout */
+        /* Wrapper to ensure proper layout */
         .form-container {
             width: 100%;
             max-width: 100vw;
@@ -34,12 +34,10 @@
             position: relative;
         }
 
-        /* Ensures the iframe dynamically resizes properly */
+        /* Adjust the iframe height dynamically */
         iframe {
             width: 100%;
-            height: 100%;
-            max-height: 100vh;
-            min-height: 100vh;
+            height: 100vh; /* Makes sure it takes the full viewport height */
             border: none;
             display: block;
             position: absolute;
@@ -51,11 +49,11 @@
 <body>
 
     <div class="form-container">
-        <iframe 
-            src="https://tally.so/embed/wM7NgY?alignLeft=1&transparentBackground=1&dynamicHeight=1" 
+        <iframe id="tally-iframe"
+            src="https://tally.so/embed/wM7NgY?alignLeft=1&transparentBackground=1&dynamicHeight=1"
             loading="lazy"
-            width="100%" 
-            height="100%" 
+            width="100%"
+            height="100%"
             title="Interested in Solar">
         </iframe>
     </div>
@@ -73,6 +71,13 @@
             var s = d.createElement("script");
             s.src = w, s.onload = v, s.onerror = v, d.body.appendChild(s);
         }
+
+        // Ensure iframe resizes correctly to fit content
+        window.addEventListener("message", function(event) {
+            if (event.data?.frameHeight) {
+                document.getElementById("tally-iframe").style.height = event.data.frameHeight + "px";
+            }
+        });
     </script>
 
 </body>
