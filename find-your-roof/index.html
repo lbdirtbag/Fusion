@@ -37,3 +37,96 @@
             font-size: 1.8rem;
             font-weight: 700;
             color: #333;
+        }
+
+        p {
+            font-size: 1rem;
+            color: #666;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        .input-container {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+            position: relative;
+            z-index: 10; /* Ensures Google Maps dropdown appears above other elements */
+        }
+
+        .input-container label {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .input-container input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .address-container {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            margin-top: 10px;
+            background: #f0f0f0;
+            padding: 8px;
+            border-radius: 5px;
+            display: none; /* Hidden until an address is selected */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Find Your Roof</h1>
+        <p>We’ll use an image of your roof to determine the best system design for you. We consider things like the size of your roof, the direction it faces, and more.</p>
+
+        <!-- Address Input Field -->
+        <div class="input-container">
+            <label for="addressInput">Address <span style="color: red;">*</span></label>
+            <input id="addressInput" type="text" placeholder="Enter a location" autocomplete="off">
+        </div>
+
+        <!-- Selected Address Display -->
+        <div class="address-container" id="selected-address">
+            Address Selected: <span id="confirmed-address"></span>
+        </div>
+    </div>
+
+    <script>
+        function initAutocomplete() {
+            let input = document.getElementById("addressInput");
+            let confirmedAddress = document.getElementById("confirmed-address");
+            let addressContainer = document.getElementById("selected-address");
+            let autocomplete = new google.maps.places.Autocomplete(input);
+
+            // When user selects an address from dropdown
+            autocomplete.addListener("place_changed", function() {
+                let place = autocomplete.getPlace();
+                if (!place.geometry) {
+                    console.error("Error: Address not found.");
+                    return;
+                }
+
+                let address = place.formatted_address;
+                confirmedAddress.textContent = address;
+                addressContainer.style.display = "block"; // Show selected address
+
+                // Save address to session storage for Tally to access
+                sessionStorage.setItem("selectedAddress", address);
+            });
+        }
+
+        // Load autocomplete on page load
+        window.onload = initAutocomplete;
+    </script>
+
+</body>
+</html>
