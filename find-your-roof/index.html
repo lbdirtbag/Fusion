@@ -12,22 +12,29 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCFcB4m8ZvYHspksNkxNW0riR1IRissTQ&libraries=places"></script>
 
     <style>
+        /* General Styling */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         html, body {
             font-family: 'Exo', sans-serif;
             text-align: center;
             background-color: #f9f9f9;
-            padding: 0;
-            margin: 0;
-            min-height: 100vh; /* Prevent clipping on mobile */
+            min-height: 100vh; /* Prevents vh issues on mobile */
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 20px; /* Adds spacing on smaller screens */
+            overflow-x: hidden; /* Prevents horizontal scrolling */
         }
 
+        /* Main Container */
         .container {
-            width: 90%;
-            max-width: 400px;
-            min-height: 100vh;
+            width: 100%;
+            max-width: 500px;
             background: white;
             padding: 20px;
             border-radius: 10px;
@@ -47,17 +54,18 @@
             line-height: 1.4;
         }
 
+        /* Input Container */
         .input-container {
             margin-top: 15px;
+            text-align: left;
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
+            align-items: center;
             width: 100%;
-            position: relative;
-            z-index: 10; /* Ensures Google Maps dropdown appears above other elements */
         }
 
         .input-container label {
+            width: 100%;
             font-weight: 600;
             font-size: 1rem;
             color: #333;
@@ -69,8 +77,10 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 1rem;
+            text-align: left;
         }
 
+        /* Address Display */
         .address-container {
             font-size: 1rem;
             font-weight: 600;
@@ -79,7 +89,15 @@
             background: #f0f0f0;
             padding: 8px;
             border-radius: 5px;
-            display: none; /* Hidden until an address is selected */
+            display: none; /* Hidden until address is selected */
+        }
+
+        /* Responsive Tweaks */
+        @media (max-width: 768px) {
+            .container {
+                width: 90%;
+                max-width: 100%;
+            }
         }
     </style>
 </head>
