@@ -18,10 +18,11 @@
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            min-height: 100dvh; /* Use 100dvh instead of 100vh to avoid mobile height issues */
+            min-height: 100dvh; /* Use 100dvh instead of 100vh to prevent mobile height issues */
+            width: 100%;
             padding: 0;
             margin: 0;
-            overflow-y: auto; /* Allow scrolling if necessary */
+            overflow-y: auto; /* Allow scrolling if needed */
             font-family: 'Exo', sans-serif;
             background-color: #f9f9f9;
         }
@@ -38,9 +39,10 @@
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
-            min-height: auto; /* Prevent forced full height */
+            min-height: auto; /* Allow it to expand naturally */
             padding-top: 20px;
             padding-bottom: 20px;
+            overflow: hidden; /* Prevents extra spacing issues */
         }
 
         /* Heading */
@@ -64,7 +66,7 @@
         #map {
             width: 100%;
             height: 250px;
-            max-height: 40vh;
+            max-height: 40vh; /* Prevents it from being too large on mobile */
             border-radius: 10px;
             margin-top: 10px;
         }
@@ -88,7 +90,7 @@
             }
 
             .container {
-                min-height: auto; /* Remove forced full height */
+                min-height: auto; /* Let it adjust naturally */
                 margin-bottom: 10px;
                 padding-bottom: 20px;
             }
@@ -98,13 +100,13 @@
             }
 
             #map {
-                height: 200px; /* Reduced map height */
-                max-height: 35vh; /* Allow proper resizing */
+                height: 180px; /* Reduce map height on mobile */
+                max-height: 35vh;
             }
 
             html, body {
                 overflow-y: auto; /* Allow scrolling if necessary */
-                min-height: 100dvh; /* Fix viewport height issues */
+                min-height: 100dvh; /* Prevent mobile viewport height bugs */
             }
         }
     </style>
@@ -188,7 +190,7 @@
             let windowHeight = window.innerHeight;
             
             // Adjust the map height dynamically for portrait mode
-            let newHeight = Math.min(windowHeight * 0.35, 220);
+            let newHeight = Math.min(windowHeight * 0.35, 200);
             mapContainer.style.height = newHeight + "px";
         }
 
