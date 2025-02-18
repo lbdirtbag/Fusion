@@ -12,43 +12,47 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCFcB4m8ZvYHspksNkxNW0riR1IRissTQ&callback=initMap&libraries=places" async defer></script>
 
     <style>
+        /* Global styles */
         html, body {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center horizontally */
-    justify-content: flex-start; /* Ensure elements stay visible */
-    height: 100vh;
-    padding: 20px 0; /* Prevent elements from being too high */
-    overflow: visible; /* Avoid content cutoff */
-}
-        
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            padding: 0;
+            margin: 0;
+            overflow: hidden; /* Prevents unwanted scrolling */
+            font-family: 'Exo', sans-serif;
+            background-color: #f9f9f9;
+        }
+
+        /* Main container */
         .container {
-    width: 90%;
-    max-width: 500px;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 500px; /* Move height inside the container */
-    padding-top: 30px
-}
-    
-    /* Manually Adjust This */
-    height: 800px; /* Change this value to whatever height you need */
-}
+            width: 90%;
+            max-width: 500px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Prevent cutting off content */
+            align-items: center;
+            min-height: auto; /* Allows natural height */
+            padding-top: 20px;
+            padding-bottom: 10px;
+        }
 
+        /* Heading */
         h1 {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: #333;
-    margin-top: 10px; /* Adjust this value as needed */
-    margin-bottom: 10px;
-}
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #333;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
 
+        /* Paragraph */
         p {
             font-size: 1rem;
             color: #666;
@@ -56,14 +60,16 @@
             line-height: 1.4;
         }
 
+        /* Map container */
         #map {
             width: 100%;
-            height: 250px; /* Default height */
-            max-height: 100vh; /* Adjusts dynamically */
+            height: 250px;
+            max-height: 100vh;
             border-radius: 10px;
             margin-top: 10px;
         }
 
+        /* Address display */
         .address-container {
             font-size: 1rem;
             font-weight: 600;
@@ -74,48 +80,30 @@
             border-radius: 5px;
         }
 
+        /* Mobile-specific styles */
         @media (max-width: 768px) {
-    h1 {
-        margin-top: 15px; /* Reduce top margin slightly */
-        font-size: 1.4rem; /* Keep it readable */
-    }
-
-    .container {
-        min-height: 95vh; /* Almost full height */
-        padding-top: 10px; /* Reduce extra space */
-        padding-bottom: 10px; /* Prevent overflow */
-    }
-
-    p {
-        margin-top: 5px; /* Reduce paragraph spacing */
-    }
-
-    #map {
-        height: 200px; /* Reduce map height */
-    }
-
-    /* 🔥 Fix 3: Prevent Scrollbars on Mobile */
-    html, body {
-        overflow-y: hidden; /* Prevent vertical scrolling */
-    }
-}
-
-}
-
-            #map {
-                height: 200px; /* Reduce height for mobile */
-                max-height: 40vh;
+            h1 {
+                margin-top: 15px; /* Adjust to ensure visibility */
+                font-size: 1.4rem; /* Slightly smaller for mobile */
             }
 
-            @media (max-width: 768px) {
-    h1 {
-        margin-top: 30px; /* Adjust this if still cut off */
-        font-size: 1.4rem; /* Reduce size slightly if needed */
-    }
-}
+            .container {
+                min-height: auto; /* Prevent fixed height issues */
+                padding-top: 10px;
+                padding-bottom: 10px;
+            }
 
             p {
-                font-size: 0.9rem;
+                margin-top: 5px;
+            }
+
+            #map {
+                height: 180px; /* Reduce map height on mobile */
+            }
+
+            html, body {
+                overflow-y: hidden; /* Prevent vertical scrolling */
+                height: 100vh;
             }
         }
     </style>
@@ -199,8 +187,8 @@
             let mapContainer = document.getElementById("map");
             let windowHeight = window.innerHeight;
             
-            // Set map height dynamically
-            let newHeight = Math.min(windowHeight * 0.4, 350); // Max height of 350px
+            // Set map height dynamically, with a lower limit on mobile
+            let newHeight = Math.min(windowHeight * 0.3, 250);
             mapContainer.style.height = newHeight + "px";
         }
 
