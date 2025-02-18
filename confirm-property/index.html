@@ -21,7 +21,7 @@
             height: 100vh;
             padding: 0;
             margin: 0;
-            overflow: hidden; /* Prevents unwanted scrolling */
+            overflow-y: auto; /* Allow scrolling if needed */
             font-family: 'Exo', sans-serif;
             background-color: #f9f9f9;
         }
@@ -36,11 +36,11 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
-            justify-content: flex-start; /* Prevent cutting off content */
+            justify-content: flex-start;
             align-items: center;
-            min-height: auto; /* Allows natural height */
+            min-height: 100vh; /* Ensure full height */
             padding-top: 20px;
-            padding-bottom: 10px;
+            padding-bottom: 20px;
         }
 
         /* Heading */
@@ -64,7 +64,7 @@
         #map {
             width: 100%;
             height: 250px;
-            max-height: 100vh;
+            max-height: 40vh;
             border-radius: 10px;
             margin-top: 10px;
         }
@@ -83,14 +83,14 @@
         /* Mobile-specific styles */
         @media (max-width: 768px) {
             h1 {
-                margin-top: 15px; /* Adjust to ensure visibility */
-                font-size: 1.4rem; /* Slightly smaller for mobile */
+                margin-top: 15px;
+                font-size: 1.4rem;
             }
 
             .container {
-                min-height: auto; /* Prevent fixed height issues */
-                padding-top: 10px;
-                padding-bottom: 10px;
+                min-height: 100vh; /* Full height */
+                margin-bottom: 10px; /* Prevent cut-off */
+                padding-bottom: 20px;
             }
 
             p {
@@ -98,12 +98,12 @@
             }
 
             #map {
-                height: 180px; /* Reduce map height on mobile */
+                height: 220px; /* Increased height */
+                max-height: 40vh;
             }
 
             html, body {
-                overflow-y: hidden; /* Prevent vertical scrolling */
-                height: 100vh;
+                overflow-y: auto; /* Allow scrolling if necessary */
             }
         }
     </style>
@@ -132,7 +132,7 @@
         let map, marker;
 
         function initMap() {
-            let address = sessionStorage.getItem("selectedAddress") || "Mesa, AZ"; // Default to Mesa, AZ if no address is found
+            let address = sessionStorage.getItem("selectedAddress") || "Mesa, AZ";
             document.getElementById("confirmed-address").innerText = address;
 
             const geocoder = new google.maps.Geocoder();
@@ -154,7 +154,6 @@
 
                     updateTallyFields(address, location.lat(), location.lng());
 
-                    // Listen for pin movement
                     marker.addListener("dragend", function() {
                         const newPos = marker.getPosition();
                         geocoder.geocode({ location: newPos }, function(results, status) {
@@ -187,8 +186,8 @@
             let mapContainer = document.getElementById("map");
             let windowHeight = window.innerHeight;
             
-            // Set map height dynamically, with a lower limit on mobile
-            let newHeight = Math.min(windowHeight * 0.3, 250);
+            // Set map height dynamically
+            let newHeight = Math.min(windowHeight * 0.35, 250);
             mapContainer.style.height = newHeight + "px";
         }
 
