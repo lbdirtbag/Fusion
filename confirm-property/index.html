@@ -12,71 +12,53 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCFcB4m8ZvYHspksNkxNW0riR1IRissTQ&callback=initMap&libraries=places" async defer></script>
 
     <style>
-        /* Global styles */
+        /* Reset styles */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* Force full viewport height */
         html, body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 100dvh; /* Use 100dvh instead of 100vh to prevent mobile height issues */
-            width: 100%;
-            padding: 0;
-            margin: 0;
-            overflow-y: auto; /* Allow scrolling if needed */
             font-family: 'Exo', sans-serif;
+            text-align: center;
             background-color: #f9f9f9;
+            height: 100vh; /* Ensures full viewport usage */
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Prevents scrolling */
+            padding: 0;
         }
 
         /* Main container */
         .container {
-            width: 90%;
+            width: 100%;
             max-width: 500px;
             background: white;
             padding: 20px;
+            margin-top: 20px;
+            margin-bottom: 30px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            min-height: auto; /* Allow it to expand naturally */
-            padding-top: 20px;
-            padding-bottom: 20px;
-            overflow: hidden; /* Prevents extra spacing issues */
         }
 
-        /* Heading */
-        h1 {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: #333;
-            margin-top: 20px;
-            margin-bottom: 10px;
-        }
-
-        /* Paragraph */
-        p {
-            font-size: 1rem;
-            color: #666;
-            margin-top: 5px;
-            line-height: 1.4;
-        }
+        h1 { font-size: 1.8rem; font-weight: 700; color: #333; margin-top: 10px; }
+        p { font-size: 1rem; color: #666; margin-top: 8px; line-height: 1.4; }
 
         /* Map container */
         #map {
             width: 100%;
             height: 250px;
-            max-height: 40vh; /* Prevents it from being too large on mobile */
+            max-height: 40vh;
             border-radius: 10px;
             margin-top: 10px;
         }
 
-        /* Address display */
         .address-container {
             font-size: 1rem;
             font-weight: 600;
             color: #333;
             margin-top: 10px;
+            margin-bottom: 20px;
             background: #f0f0f0;
             padding: 8px;
             border-radius: 5px;
@@ -90,23 +72,17 @@
             }
 
             .container {
-                min-height: auto; /* Let it adjust naturally */
-                margin-bottom: 10px;
-                padding-bottom: 20px;
-            }
-
-            p {
-                margin-top: 5px;
+                width: 95%;
+                padding: 15px;
             }
 
             #map {
-                height: 180px; /* Reduce map height on mobile */
-                max-height: 35vh;
+                height: 200px; /* Adjust map height for mobile */
+                max-height: 40vh;
             }
 
             html, body {
-                overflow-y: auto; /* Allow scrolling if necessary */
-                min-height: 100dvh; /* Prevent mobile viewport height bugs */
+                overflow: hidden; /* Keep behavior consistent */
             }
         }
     </style>
@@ -189,7 +165,6 @@
             let mapContainer = document.getElementById("map");
             let windowHeight = window.innerHeight;
             
-            // Adjust the map height dynamically for portrait mode
             let newHeight = Math.min(windowHeight * 0.35, 200);
             mapContainer.style.height = newHeight + "px";
         }
