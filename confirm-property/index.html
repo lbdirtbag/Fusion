@@ -81,9 +81,9 @@
     }
 
     .container {
-        min-height: 95vh; /* Use almost full height */
-        padding-top: 10px; /* Reduce unnecessary space */
-        padding-bottom: 10px; /* Make sure nothing overflows */
+        min-height: 95vh; /* Almost full height */
+        padding-top: 10px; /* Reduce extra space */
+        padding-bottom: 10px; /* Prevent overflow */
     }
 
     p {
@@ -91,8 +91,15 @@
     }
 
     #map {
-        height: 200px; /* Reduce map height for mobile */
+        height: 200px; /* Reduce map height */
     }
+
+    /* 🔥 Fix 3: Prevent Scrollbars on Mobile */
+    html, body {
+        overflow-y: hidden; /* Prevent vertical scrolling */
+    }
+}
+
 }
 
             #map {
