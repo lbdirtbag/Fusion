@@ -13,18 +13,15 @@
 
     <style>
         html, body {
-            font-family: 'Exo', sans-serif;
-            text-align: center;
-            background-color: #f9f9f9;
-            padding: 0;
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: visible;
-        }
-
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center horizontally */
+    justify-content: flex-start; /* Ensure elements stay visible */
+    height: 100vh;
+    padding: 20px 0; /* Prevent elements from being too high */
+    overflow: visible; /* Avoid content cutoff */
+}
+        
         .container {
     width: 90%;
     max-width: 500px;
@@ -36,7 +33,8 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 800px; /* Move height inside the container */
+    min-height: 500px; /* Move height inside the container */
+    padding-top: 30px
 }
     
     /* Manually Adjust This */
