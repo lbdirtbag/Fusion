@@ -26,19 +26,6 @@
             border-radius: 10px;
         }
 
-        .slider-header {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #333;
-        }
-
-        .slider-subtext {
-            font-size: 1rem;
-            color: #666;
-            margin-top: 8px;
-            line-height: 1.4;
-        }
-
         input[type="range"] {
             width: 100%;
             -webkit-appearance: none;
@@ -95,8 +82,7 @@
 <body>
 
     <div class="slider-container">
-        <p class="slider-header">How much is your average monthly electric bill?</p>
-
+        
         <!-- Slider now defaults to $380 -->
         <input type="range" id="priceSlider" min="50" max="1200" step="10" value="380">
         <p class="slider-value">$<span id="sliderValue">380</span></p>
