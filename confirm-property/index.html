@@ -17,40 +17,39 @@
 
         /* Full height and centering */
         html, body {
-            font-family: 'Exo', sans-serif;
-            text-align: center;
-            background-color: #f9f9f9;
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 0;
-            overflow-y: auto; /* Allow scrolling if needed */
-        }
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100vh;
+    width: 100vw;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto; /* Allow scrolling if necessary */
+}
 
-        /* Main container */
-        .container {
-            width: 100%;
-            max-width: 500px;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            min-height: 85vh; /* Prevent content from getting cut off */
-            padding-bottom: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start; /* Prevent content from being pushed off-screen */
-        }
+.container {
+    width: 90%;
+    max-width: 500px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    min-height: 95vh; /* Ensure the bottom is visible */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-bottom: 20px;
+}
 
-        h1 { 
-            font-size: 1.8rem; 
-            font-weight: 700; 
-            color: #333; 
-            margin-top: 40px; /* Push H1 down */
-        }
+h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #333;
+    margin-top: 50px; /* Push it down */
+}
+
 
         p { 
             font-size: 1rem; 
