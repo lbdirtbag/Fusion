@@ -15,38 +15,42 @@
         /* Reset styles */
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* Force full viewport height */
+        /* Ensure full-screen layout */
         html, body {
             font-family: 'Exo', sans-serif;
             text-align: center;
             background-color: #ffffff;
-            height: 100vh; /* Forces full height */
-            width: 100vw; /* Ensures it takes full width */
+            height: 100vh; /* Full height */
+            width: 100vw; /* Full width */
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 0;
-            overflow: hidden; /* Prevents scrolling */
+            overflow: hidden; /* Prevents any scrolling */
         }
 
-        /* Main container */
+        /* Full-screen container */
         .container {
-            width: 100%;
-            max-width: 500px;
+            width: 100vw;
+            height: 100vh;
+            max-width: 100%;
+            max-height: 100%;
             background: white;
-            padding: 5px;
-            margin-top: 5px;
-            margin-bottom: 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
-        h1 { font-size: 1.8rem; font-weight: 700; color: #333; margin-top: 10px; }
-        p { font-size: 1rem; color: #666; margin-top: 8px; line-height: 1.4; }
+        h1 { font-size: 1.8rem; font-weight: 700; color: #333; margin-bottom: 10px; }
+        p { font-size: 1rem; color: #666; margin-bottom: 20px; line-height: 1.4; }
 
+        /* Address Input */
         .input-container {
-            margin-top: 30px;
             width: 100%;
+            max-width: 400px;
             text-align: left;
             display: flex;
             flex-direction: column;
@@ -56,30 +60,29 @@
         .input-container label {
             width: 100%;
             font-weight: 600;
-            margin-top:30px
             font-size: 1rem;
             color: #333;
+            margin-bottom: 5px;
         }
 
         .input-container input {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
-            margin-bottom: 30px;
             border-radius: 5px;
             font-size: 1rem;
         }
 
+        /* Address Display */
         .address-container {
             font-size: 1rem;
             font-weight: 600;
             color: #333;
-            margin-top: 5px;
-            margin-bottom: 20px;
+            margin-top: 15px;
             background: #f0f0f0;
             padding: 8px;
             border-radius: 5px;
-            display: none; /* Hidden until an address is selected */
+            display: none; /* Hidden until address is selected */
         }
     </style>
 </head>
