@@ -15,38 +15,33 @@
         /* Reset styles */
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* Ensure full-screen layout */
+        /* Prevent container from affecting Tally form layout */
         html, body {
             font-family: 'Exo', sans-serif;
             text-align: center;
             background-color: #ffffff;
-            height: 100vh; /* Full height */
-            width: 100vw; /* Full width */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden; /* Prevents any scrolling */
+            width: 100%;
+            height: auto;
+            display: block;
+            overflow: visible;
         }
 
-        /* Fix container height to prevent extra space */
-.container {
-    width: 100%;
-    max-width: 500px; /* Keep form narrow for readability */
-    background: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start; /* Align content to the top */
-    align-items: center;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-
-    height: auto !important; /* Allow natural height */
-    min-height: auto !important; /* Prevent unnecessary stretching */
-    max-height: none !important; /* Remove restrictions */
-    overflow: visible !important; /* Ensure nothing is cut off */
-}
-
+        /* Main Container */
+        .container {
+            width: 100%;
+            max-width: 500px; /* Adjust to fit Tally.so form */
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin: 0 auto; /* Center within form */
+            height: auto;
+            overflow: visible;
+        }
 
         h1 { font-size: 1.8rem; font-weight: 700; color: #333; margin-bottom: 10px; }
         p { font-size: 1rem; color: #666; margin-bottom: 20px; line-height: 1.4; }
@@ -86,7 +81,7 @@
             background: #f0f0f0;
             padding: 8px;
             border-radius: 5px;
-            display: none; /* Hidden until address is selected */
+            display: none;
         }
     </style>
 </head>
