@@ -82,23 +82,6 @@
             border-radius: 5px;
         }
 
-        /* Button */
-        .button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 1rem;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        .button:hover {
-            background-color: #0056b3;
-        }
-
         /* Fix for Mobile Screens */
         @media (max-width: 768px) {
             .container {
@@ -136,9 +119,6 @@
         <div class="address-container" id="selected-address">
             Address: <span id="confirmed-address">Loading...</span>
         </div>
-
-        <!-- Continue Button -->
-        <button id="continueToFormBtn" class="button">Continue to Form</button>
     </div>
 
     <script>
@@ -181,6 +161,11 @@
                         });
                     });
 
+                    // 🚀 Automatically Redirect to Tally.so After 3 Seconds
+                    setTimeout(() => {
+                        redirectToTally();
+                    }, 3000);
+
                 } else {
                     console.error("Geocode error: " + status);
                     document.getElementById("confirmed-address").innerText = "Address not found";
@@ -194,8 +179,8 @@
             sessionStorage.setItem("selectedLng", lng);
         }
 
-        // Continue to Tally Form with Address Data
-        document.getElementById("continueToFormBtn").addEventListener("click", function () {
+        // 🚀 Function to Redirect to Tally.so
+        function redirectToTally() {
             let address = document.getElementById("confirmed-address").innerText;
             let lat = sessionStorage.getItem("selectedLat");
             let lng = sessionStorage.getItem("selectedLng");
@@ -204,12 +189,12 @@
                 let encodedAddress = encodeURIComponent(address);
                 let tallyFormURL = `https://tally.so/r/wM7NgY?address=${encodedAddress}&lat=${lat}&lng=${lng}`;
                 
-                // Redirect to Tally form
+                // Redirect to Tally
                 window.location.href = tallyFormURL;
             } else {
-                alert("Please confirm the property location before continuing.");
+                console.error("Error: Missing address data.");
             }
-        });
+        }
 
         function adjustMapHeight() {
             let mapContainer = document.getElementById("map");
