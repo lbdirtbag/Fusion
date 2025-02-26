@@ -82,23 +82,6 @@
             border-radius: 5px;
         }
 
-        /* Form Button */
-        .form-link {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 1rem;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-
-        .form-link:hover {
-            background-color: #0056b3;
-        }
-
         /* Fix for Mobile Screens */
         @media (max-width: 768px) {
             .container {
@@ -137,8 +120,10 @@
             Address: <span id="confirmed-address">Loading...</span>
         </div>
 
-        <!-- Link to Tally Form -->
-        <a id="tallyFormLink" class="form-link" href="#">Continue to Form</a>
+        <!-- Hidden Input Fields (for potential use) -->
+        <input type="hidden" id="tally-address">
+        <input type="hidden" id="tally-lat">
+        <input type="hidden" id="tally-lng">
     </div>
 
     <script>
@@ -186,30 +171,17 @@
                     document.getElementById("confirmed-address").innerText = "Address not found";
                 }
             });
-
-            updateTallyFormLink();
         }
 
         function updateTallyFields(address, lat, lng) {
             sessionStorage.setItem("selectedAddress", address);
             sessionStorage.setItem("selectedLat", lat);
             sessionStorage.setItem("selectedLng", lng);
-        }
 
-        function updateTallyFormLink() {
-            let address = sessionStorage.getItem("selectedAddress");
-            let lat = sessionStorage.getItem("selectedLat");
-            let lng = sessionStorage.getItem("selectedLng");
-
-            let formLink = document.getElementById("tallyFormLink");
-
-            if (address && lat && lng) {
-                let encodedAddress = encodeURIComponent(address);
-                let tallyURL = `https://tally.so/r/wM7NgY?address=${encodedAddress}&lat=${lat}&lng=${lng}`;
-                formLink.href = tallyURL;
-            } else {
-                formLink.href = "https://tally.so/r/wM7NgY";
-            }
+            // Also update hidden input fields (for potential form submission)
+            document.getElementById("tally-address").value = address;
+            document.getElementById("tally-lat").value = lat;
+            document.getElementById("tally-lng").value = lng;
         }
 
         function adjustMapHeight() {
