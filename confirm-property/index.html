@@ -40,9 +40,9 @@
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
-            height: auto; /* Allows content to dictate height */
-            overflow: visible !important; /* Ensures content isn't cut off */
-            padding-bottom: 20px; /* Adds extra space at the bottom */
+            height: auto;
+            overflow: visible !important;
+            padding-bottom: 20px;
         }
 
         /* Heading */
@@ -82,13 +82,30 @@
             border-radius: 5px;
         }
 
+        /* Button */
+        .button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+
         /* Fix for Mobile Screens */
         @media (max-width: 768px) {
             .container {
-                min-height: 100dvh; /* Ensures it takes full height */
-                height: auto !important; /* Expands as needed */
-                overflow: visible !important; /* Prevents content from being clipped */
-                padding-bottom: 20px; /* Ensures space for the bottom content */
+                min-height: 100dvh;
+                height: auto !important;
+                overflow: visible !important;
+                padding-bottom: 20px;
                 display: flex;
                 flex-direction: column;
                 justify-content: flex-start;
@@ -103,21 +120,6 @@
                 height: 250px;
                 max-height: 35vh;
             }
-        }
-
-        /* Ensure Child Elements Inside .container are Not Shrinking */
-        .container * {
-            flex-shrink: 0;
-        }
-
-        /* If Using an Embedded iFrame */
-        iframe {
-            width: 100%;
-            min-height: 700px; /* Ensures enough height */
-            height: auto !important; /* Adjusts dynamically */
-            display: block;
-            border: none;
-            overflow: hidden;
         }
     </style>
 </head>
@@ -135,17 +137,18 @@
             Address: <span id="confirmed-address">Loading...</span>
         </div>
 
-        <!-- Hidden Input Fields for Tally -->
-        <input type="hidden" id="tally-address">
-        <input type="hidden" id="tally-lat">
-        <input type="hidden" id="tally-lng">
+        <!-- Continue Button -->
+        <button id="continueToFormBtn" class="button">Continue to Form</button>
     </div>
 
     <script>
         let map, marker;
 
         function initMap() {
-            let address = sessionStorage.getItem("selectedAddress") || "Mesa, AZ";
+            // Get address from URL first, fallback to sessionStorage
+            const urlParams = new URLSearchParams(window.location.search);
+            let address = urlParams.get("address") || sessionStorage.getItem("selectedAddress") || "Mesa, AZ";
+
             document.getElementById("confirmed-address").innerText = address;
 
             const geocoder = new google.maps.Geocoder();
@@ -189,16 +192,28 @@
             sessionStorage.setItem("selectedAddress", address);
             sessionStorage.setItem("selectedLat", lat);
             sessionStorage.setItem("selectedLng", lng);
-
-            document.getElementById("tally-address").value = address;
-            document.getElementById("tally-lat").value = lat;
-            document.getElementById("tally-lng").value = lng;
         }
+
+        // Continue to Tally Form with Address Data
+        document.getElementById("continueToFormBtn").addEventListener("click", function () {
+            let address = document.getElementById("confirmed-address").innerText;
+            let lat = sessionStorage.getItem("selectedLat");
+            let lng = sessionStorage.getItem("selectedLng");
+
+            if (address && lat && lng) {
+                let encodedAddress = encodeURIComponent(address);
+                let tallyFormURL = `https://tally.so/r/wM7NgY?address=${encodedAddress}&lat=${lat}&lng=${lng}`;
+                
+                // Redirect to Tally form
+                window.location.href = tallyFormURL;
+            } else {
+                alert("Please confirm the property location before continuing.");
+            }
+        });
 
         function adjustMapHeight() {
             let mapContainer = document.getElementById("map");
             let windowHeight = window.innerHeight;
-
             let newHeight = Math.min(windowHeight * 0.35, 200);
             mapContainer.style.height = newHeight + "px";
         }
@@ -208,19 +223,6 @@
             adjustMapHeight();
         };
         window.onresize = adjustMapHeight;
-
-        // Auto-Resize iFrame for Tally Forms
-        window.addEventListener("message", function (event) {
-            if (event.origin.includes("tally.so")) {
-                let data = event.data;
-                if (data && data.height) {
-                    let iframe = document.querySelector("iframe");
-                    if (iframe) {
-                        iframe.style.height = (data.height + 50) + "px"; // Prevents cutoff issues
-                    }
-                }
-            }
-        });
     </script>
 
 </body>
