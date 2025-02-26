@@ -119,6 +119,11 @@
         <div class="address-container" id="selected-address">
             Address: <span id="confirmed-address">Loading...</span>
         </div>
+
+        <!-- Hidden Input Fields for Tally -->
+        <input type="hidden" id="tally-address">
+        <input type="hidden" id="tally-lat">
+        <input type="hidden" id="tally-lng">
     </div>
 
     <script>
@@ -161,11 +166,6 @@
                         });
                     });
 
-                    // 🚀 Automatically Redirect to Tally.so After 3 Seconds
-                    setTimeout(() => {
-                        redirectToTally();
-                    }, 3000);
-
                 } else {
                     console.error("Geocode error: " + status);
                     document.getElementById("confirmed-address").innerText = "Address not found";
@@ -177,23 +177,11 @@
             sessionStorage.setItem("selectedAddress", address);
             sessionStorage.setItem("selectedLat", lat);
             sessionStorage.setItem("selectedLng", lng);
-        }
 
-        // 🚀 Function to Redirect to Tally.so
-        function redirectToTally() {
-            let address = document.getElementById("confirmed-address").innerText;
-            let lat = sessionStorage.getItem("selectedLat");
-            let lng = sessionStorage.getItem("selectedLng");
-
-            if (address && lat && lng) {
-                let encodedAddress = encodeURIComponent(address);
-                let tallyFormURL = `https://tally.so/r/wM7NgY?address=${encodedAddress}&lat=${lat}&lng=${lng}`;
-                
-                // Redirect to Tally
-                window.location.href = tallyFormURL;
-            } else {
-                console.error("Error: Missing address data.");
-            }
+            // Also update hidden input fields (for potential form submission)
+            document.getElementById("tally-address").value = address;
+            document.getElementById("tally-lat").value = lat;
+            document.getElementById("tally-lng").value = lng;
         }
 
         function adjustMapHeight() {
