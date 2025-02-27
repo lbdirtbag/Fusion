@@ -120,7 +120,7 @@
             Address: <span id="confirmed-address">Loading...</span>
         </div>
 
-        <!-- Embedded Tally Form (Modify if needed) -->
+        <!-- Embedded Tally Form -->
         <iframe data-tally-src="https://tally.so/embed/wM7NgY" loading="lazy" width="100%" height="500" frameborder="0"></iframe>
 
     </div>
@@ -187,7 +187,7 @@
                 let tallyIframe = document.querySelector("iframe[data-tally-src]");
                 if (tallyIframe) {
                     let baseURL = tallyIframe.dataset.tallySrc.split("?")[0];
-                    tallyIframe.dataset.tallySrc = `${baseURL}?address=${encodedAddress}`;
+                    tallyIframe.src = `${baseURL}?address=${encodedAddress}`;
                 }
             }
         }
