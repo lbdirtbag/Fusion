@@ -81,29 +81,6 @@
             padding: 8px;
             border-radius: 5px;
         }
-
-        /* Fix for Mobile Screens */
-        @media (max-width: 768px) {
-            .container {
-                min-height: 100dvh;
-                height: auto !important;
-                overflow: visible !important;
-                padding-bottom: 20px;
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-start;
-                align-items: center;
-            }
-
-            h1 {
-                font-size: 1.4rem;
-            }
-
-            #map {
-                height: 250px;
-                max-height: 35vh;
-            }
-        }
     </style>
 </head>
 <body>
@@ -119,20 +96,16 @@
         <div class="address-container" id="selected-address">
             Address: <span id="confirmed-address">Loading...</span>
         </div>
-
-        <!-- Hidden Input Fields (for potential use) -->
-        <input type="hidden" id="tally-address">
-        <input type="hidden" id="tally-lat">
-        <input type="hidden" id="tally-lng">
     </div>
 
     <script>
         let map, marker;
 
         function initMap() {
-            // Retrieve the stored address from sessionStorage (from "Find Your Roof")
+            // Retrieve the stored address from sessionStorage (set on Page 10 - "Find Your Roof")
             let address = sessionStorage.getItem("selectedAddress") || "Mesa, AZ";
 
+            // Display the address on the confirmation page
             document.getElementById("confirmed-address").innerText = address;
 
             const geocoder = new google.maps.Geocoder();
@@ -152,7 +125,7 @@
                         draggable: true
                     });
 
-                    updateTallyFields(address, location.lat(), location.lng());
+                    updateTallyFields(address);
 
                     marker.addListener("dragend", function() {
                         const newPos = marker.getPosition();
@@ -160,7 +133,7 @@
                             if (status === "OK") {
                                 let newAddress = results[0].formatted_address;
                                 document.getElementById("confirmed-address").innerText = newAddress;
-                                updateTallyFields(newAddress, newPos.lat(), newPos.lng());
+                                updateTallyFields(newAddress);
                             }
                         });
                     });
@@ -171,23 +144,22 @@
                 }
             });
 
-            updateTallyForm();
+            passAddressToTally();
         }
 
-        function updateTallyFields(address, lat, lng) {
+        function updateTallyFields(address) {
             sessionStorage.setItem("selectedAddress", address);
-            sessionStorage.setItem("selectedLat", lat);
-            sessionStorage.setItem("selectedLng", lng);
 
-            document.getElementById("tally-address").value = address;
-            document.getElementById("tally-lat").value = lat;
-            document.getElementById("tally-lng").value = lng;
+            // ✅ Send address from the embedded GitHub page to the parent Tally form
+            window.parent.postMessage({ address: address }, "*");
         }
 
-        function updateTallyForm() {
+        function passAddressToTally() {
             let address = sessionStorage.getItem("selectedAddress");
             if (address) {
                 let encodedAddress = encodeURIComponent(address);
+                
+                // ✅ Update Tally form's URL to include the address
                 let tallyIframe = document.querySelector("iframe[data-tally-src]");
                 if (tallyIframe) {
                     let baseURL = tallyIframe.dataset.tallySrc.split("?")[0];
