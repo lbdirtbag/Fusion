@@ -120,10 +120,9 @@
             Address: <span id="confirmed-address">Loading...</span>
         </div>
 
-        <!-- Hidden Input Fields (for potential use) -->
-        <input type="hidden" id="tally-address">
-        <input type="hidden" id="tally-lat">
-        <input type="hidden" id="tally-lng">
+        <!-- Embedded Tally Form (Modify if needed) -->
+        <iframe data-tally-src="https://tally.so/embed/wM7NgY" loading="lazy" width="100%" height="500" frameborder="0"></iframe>
+
     </div>
 
     <script>
@@ -171,17 +170,26 @@
                     document.getElementById("confirmed-address").innerText = "Address not found";
                 }
             });
+
+            updateTallyForm();
         }
 
         function updateTallyFields(address, lat, lng) {
             sessionStorage.setItem("selectedAddress", address);
             sessionStorage.setItem("selectedLat", lat);
             sessionStorage.setItem("selectedLng", lng);
+        }
 
-            // Also update hidden input fields (for potential form submission)
-            document.getElementById("tally-address").value = address;
-            document.getElementById("tally-lat").value = lat;
-            document.getElementById("tally-lng").value = lng;
+        function updateTallyForm() {
+            let address = sessionStorage.getItem("selectedAddress");
+            if (address) {
+                let encodedAddress = encodeURIComponent(address);
+                let tallyIframe = document.querySelector("iframe[data-tally-src]");
+                if (tallyIframe) {
+                    let baseURL = tallyIframe.dataset.tallySrc.split("?")[0];
+                    tallyIframe.dataset.tallySrc = `${baseURL}?address=${encodedAddress}`;
+                }
+            }
         }
 
         function adjustMapHeight() {
