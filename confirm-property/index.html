@@ -12,7 +12,6 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCFcB4m8ZvYHspksNkxNW0riR1IRissTQ&callback=initMap&libraries=places" async defer></script>
 
     <style>
-        /* Global styles */
         html, body {
             display: flex;
             flex-direction: column;
@@ -27,8 +26,6 @@
             font-family: 'Exo', sans-serif;
             background-color: #ffffff;
         }
-
-        /* Main container */
         .container {
             width: 90%;
             max-width: 500px;
@@ -44,8 +41,6 @@
             overflow: visible !important;
             padding-bottom: 20px;
         }
-
-        /* Heading */
         h1 {
             font-size: 1.6rem;
             font-weight: 700;
@@ -53,16 +48,12 @@
             margin-top: 5px;
             margin-bottom: 10px;
         }
-
-        /* Paragraph */
         p {
             font-size: 1rem;
             color: #666;
             margin-top: 5px;
             line-height: 1.4;
         }
-
-        /* Map container */
         #map {
             width: 100%;
             height: 350px;
@@ -70,8 +61,6 @@
             border-radius: 10px;
             margin-top: 10px;
         }
-
-        /* Address display */
         .address-container {
             font-size: 1rem;
             font-weight: 600;
@@ -84,7 +73,6 @@
     </style>
 </head>
 <body>
-
     <div class="container">
         <h1>Confirm Your Property</h1>
         <p>If the pin isn't already on your roof, click to place it. This helps us understand what kind of solar system will work best for you and improves the accuracy of your quotes.</p>
@@ -102,10 +90,8 @@
         let map, marker;
 
         function initMap() {
-            // Retrieve the stored address from sessionStorage (set on Page 10 - "Find Your Roof")
+            // Get address from sessionStorage (set on Page 10 - Find Your Roof)
             let address = sessionStorage.getItem("selectedAddress") || "Mesa, AZ";
-
-            // Display the address on the confirmation page
             document.getElementById("confirmed-address").innerText = address;
 
             const geocoder = new google.maps.Geocoder();
@@ -125,7 +111,8 @@
                         draggable: true
                     });
 
-                    updateTallyFields(address);
+                    // Pass initial address to Tally
+                    passAddressToTally(address);
 
                     marker.addListener("dragend", function() {
                         const newPos = marker.getPosition();
@@ -133,46 +120,26 @@
                             if (status === "OK") {
                                 let newAddress = results[0].formatted_address;
                                 document.getElementById("confirmed-address").innerText = newAddress;
-                                updateTallyFields(newAddress);
+                                sessionStorage.setItem("selectedAddress", newAddress);
+                                passAddressToTally(newAddress); // Update Tally with new address
                             }
                         });
                     });
-
                 } else {
                     console.error("Geocode error: " + status);
                     document.getElementById("confirmed-address").innerText = "Address not found";
                 }
             });
-
-            passAddressToTally();
         }
 
-        function updateTallyFields(address) {
-            sessionStorage.setItem("selectedAddress", address);
-
-            // ✅ Send address from the embedded GitHub page to the parent Tally form
-            window.parent.postMessage({ address: address }, "*");
-        }
-
-        function passAddressToTally() {
-            let address = sessionStorage.getItem("selectedAddress");
-            if (address) {
-                let encodedAddress = encodeURIComponent(address);
-                
-                // ✅ Update Tally form's URL to include the address
-                let tallyIframe = document.querySelector("iframe[data-tally-src]");
-                if (tallyIframe) {
-                    let baseURL = tallyIframe.dataset.tallySrc.split("?")[0];
-                    tallyIframe.src = `${baseURL}?address=${encodedAddress}`;
-                }
-            }
+        function passAddressToTally(address) {
+            // Send the address to the parent Tally form
+            window.parent.postMessage({ address: address }, "https://tally.so");
         }
 
         window.onload = () => {
             initMap();
         };
-
     </script>
-
 </body>
 </html>
