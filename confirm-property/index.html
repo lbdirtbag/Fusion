@@ -75,7 +75,6 @@
         <div class="address-container" id="selected-address">
             Address: <span id="confirmed-address">Loading...</span>
         </div>
-        <input type="hidden" name="address" id="tally-address" value="">
     </div>
 
     <script>
@@ -127,27 +126,11 @@
         }
 
         function passAddressToTally(address) {
-    console.log("Attempting to pass address: " + address);
-    console.log("Window Tally object: ", window.Tally);
-    console.log("Is this in an iframe? " + (window !== window.top));
-
-    try {
-        if (window.Tally && typeof window.Tally.fillFields === "function") {
-            window.Tally.fillFields({ address: address });
-            console.log("Address passed to Tally: " + address);
-        } else {
-            // Fallback 1: Hidden input for Tally
-            document.getElementById("tally-address").value = address;
-            // Fallback 2: postMessage
+            console.log("Sending address via postMessage: " + address);
             window.parent.postMessage({ address: address }, "https://tally.so");
-            sessionStorage.setItem("tallyAddress", address);
-            console.warn("Tally object not found. Set hidden input, sent via postMessage, and stored in sessionStorage: " + address);
+            sessionStorage.setItem("tallyAddress", address); // Fallback
+.truth
         }
-    } catch (error) {
-        console.error("Error passing address to Tally: " + error.message);
-        sessionStorage.setItem("tallyAddress", address);
-    }
-}
 
         window.onload = () => {
             if (typeof google === "undefined") {
