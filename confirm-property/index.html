@@ -65,19 +65,6 @@
             padding: 8px;
             border-radius: 5px;
         }
-        button {
-            margin-top: 15px;
-            padding: 10px 20px;
-            background: #00e2b5;
-            border: none;
-            border-radius: 5px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #00c99d;
-        }
     </style>
 </head>
 <body>
@@ -88,19 +75,17 @@
         <div class="address-container" id="selected-address">
             Address: <span id="confirmed-address">Loading...</span>
         </div>
-        <button onclick="triggerTallyNext()">Next</button>
     </div>
 
     <script>
         let map, marker;
-        let currentAddress;
 
         function initMap() {
-            currentAddress = sessionStorage.getItem("selectedAddress") || "Mesa, AZ";
-            document.getElementById("confirmed-address").innerText = currentAddress;
+            let address = sessionStorage.getItem("selectedAddress") || "Mesa, AZ";
+            document.getElementById("confirmed-address").innerText = address;
 
             const geocoder = new google.maps.Geocoder();
-            geocoder.geocode({ address: currentAddress }, function(results, status) {
+            geocoder.geocode({ address: address }, function(results, status) {
                 if (status === "OK") {
                     const location = results[0].geometry.location;
 
@@ -116,31 +101,43 @@
                         draggable: true
                     });
 
+                    passAddressToTally(address);
+
                     marker.addListener("dragend", function() {
                         const newPos = marker.getPosition();
                         geocoder.geocode({ location: newPos }, function(results, status) {
                             if (status === "OK") {
-                                currentAddress = results[0].formatted_address;
-                                document.getElementById("confirmed-address").innerText = currentAddress;
-                                sessionStorage.setItem("selectedAddress", currentAddress);
+                                let newAddress = results[0].formatted_address;
+                                document.getElementById("confirmed-address").innerText = newAddress;
+                                sessionStorage.setItem("selectedAddress", newAddress);
+                                passAddressToTally(newAddress);
                             } else {
                                 console.error("Geocode failed on drag: " + status);
+                                passAddressToTally(address); // Fallback
                             }
                         });
                     });
                 } else {
                     console.error("Initial geocode failed: " + status);
                     document.getElementById("confirmed-address").innerText = "Address not found";
+                    passAddressToTally(address); // Fallback
                 }
             });
         }
 
-        function triggerTallyNext() {
-            // Store the address in sessionStorage
-            sessionStorage.setItem("tallyAddress", currentAddress);
-            console.log("Address stored for Tally: " + currentAddress);
-            // Trigger Tally's native "Next" button click
-            window.parent.postMessage({ action: "next" }, "https://tally.so");
+        function passAddressToTally(address) {
+            try {
+                if (window.Tally && typeof window.Tally.fillFields === "function") {
+                    window.Tally.fillFields({ address: address });
+                    console.log("Address passed to Tally: " + address);
+                } else {
+                    sessionStorage.setItem("tallyAddress", address);
+                    console.warn("Tally object not found. Address stored in sessionStorage: " + address);
+                }
+            } catch (error) {
+                console.error("Error passing address to Tally: " + error.message);
+                sessionStorage.setItem("tallyAddress", address);
+            }
         }
 
         window.onload = () => {
