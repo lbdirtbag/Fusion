@@ -88,7 +88,7 @@
         <div class="address-container" id="selected-address">
             Address: <span id="confirmed-address">Loading...</span>
         </div>
-        <button onclick="goToNextPage()">Confirm</button>
+        <button onclick="triggerTallyNext()">Next</button>
     </div>
 
     <script>
@@ -135,12 +135,12 @@
             });
         }
 
-        function goToNextPage() {
-            // Replace with your actual Tally form URL
-            const tallyBaseUrl = "https://tally.so/r/wM7NgY"; // UPDATE THIS WITH YOUR TALLY FORM URL
-            const nextPageUrl = `${tallyBaseUrl}?address=${encodeURIComponent(currentAddress)}`;
-            console.log("Redirecting to: " + nextPageUrl);
-            window.top.location.href = nextPageUrl; // Redirect parent window
+        function triggerTallyNext() {
+            // Store the address in sessionStorage
+            sessionStorage.setItem("tallyAddress", currentAddress);
+            console.log("Address stored for Tally: " + currentAddress);
+            // Trigger Tally's native "Next" button click
+            window.parent.postMessage({ action: "next" }, "https://tally.so");
         }
 
         window.onload = () => {
