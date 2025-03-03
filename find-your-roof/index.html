@@ -4,18 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Find Your Roof | Fusion</title>
-
-    <!-- Google Fonts: Exo -->
     <link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;600;700&display=swap" rel="stylesheet">
-
-    <!-- Google Maps Places API -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCFcB4m8ZvYHspksNkxNW0riR1IRissTQ&libraries=places"></script>
-
     <style>
-        /* Reset styles */
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        /* Prevent container from affecting Tally form layout */
         html, body {
             font-family: 'Exo', sans-serif;
             text-align: center;
@@ -25,11 +17,9 @@
             display: block;
             overflow: visible;
         }
-
-        /* Main Container */
         .container {
             width: 100%;
-            max-width: 500px; /* Adjust to fit Tally.so form */
+            max-width: 500px;
             background: white;
             display: flex;
             flex-direction: column;
@@ -38,15 +28,12 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin: 0 auto; /* Center within form */
+            margin: 0 auto;
             height: auto;
             overflow: visible;
         }
-
         h1 { font-size: 1.8rem; font-weight: 700; color: #333; margin-bottom: 10px; }
         p { font-size: 1rem; color: #666; margin-bottom: 20px; line-height: 1.4; }
-
-        /* Address Input */
         .input-container {
             width: 100%;
             max-width: 400px;
@@ -55,7 +42,6 @@
             flex-direction: column;
             align-items: center;
         }
-
         .input-container label {
             width: 100%;
             font-weight: 600;
@@ -63,7 +49,6 @@
             color: #333;
             margin-bottom: 5px;
         }
-
         .input-container input {
             width: 100%;
             padding: 10px;
@@ -71,8 +56,6 @@
             border-radius: 5px;
             font-size: 1rem;
         }
-
-        /* Address Display */
         .address-container {
             font-size: 1rem;
             font-weight: 600;
@@ -86,18 +69,13 @@
     </style>
 </head>
 <body>
-
     <div class="container">
         <h1>Find Your Roof</h1>
         <p>We’ll use an image of your roof to determine the best system design for you.</p>
-
-        <!-- Address Input Field -->
         <div class="input-container">
             <label for="addressInput">Address <span style="color: red;">*</span></label>
             <input id="addressInput" type="text" placeholder="Enter a location" autocomplete="off">
         </div>
-
-        <!-- Selected Address Display -->
         <div class="address-container" id="selected-address">
             Address Selected: <span id="confirmed-address"></span>
         </div>
@@ -122,11 +100,25 @@
                 addressContainer.style.display = "block";
 
                 sessionStorage.setItem("selectedAddress", address);
+                console.log("Address saved to sessionStorage: " + address);
             });
+
+            let savedAddress = sessionStorage.getItem("selectedAddress");
+            if (savedAddress) {
+                input.value = savedAddress;
+                confirmedAddress.textContent = savedAddress;
+                addressContainer.style.display = "block";
+            }
         }
 
-        window.onload = initAutocomplete;
+        window.onload = function() {
+            if (typeof google === "undefined") {
+                console.error("Google Maps API not loaded. Retrying in 1s...");
+                setTimeout(initAutocomplete, 1000);
+            } else {
+                initAutocomplete();
+            }
+        };
     </script>
-
 </body>
 </html>
