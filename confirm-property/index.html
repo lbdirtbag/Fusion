@@ -126,21 +126,24 @@
         }
 
         function passAddressToTally(address) {
-    try {
-        if (window.Tally && typeof window.Tally.fillFields === "function") {
-            window.Tally.fillFields({ address: address });
-            console.log("Address passed to Tally: " + address);
-        } else {
-            // Fallback: Send via postMessage
-            window.parent.postMessage({ address: address }, "https://tally.so");
-            sessionStorage.setItem("tallyAddress", address);
-            console.warn("Tally object not found. Sent via postMessage and stored in sessionStorage: " + address);
+            console.log("Attempting to pass address: " + address);
+            console.log("Window Tally object: ", window.Tally);
+            console.log("Is this in an iframe? " + (window !== window.top));
+
+            try {
+                if (window.Tally && typeof window.Tally.fillFields === "function") {
+                    window.Tally.fillFields({ address: address });
+                    console.log("Address passed to Tally: " + address);
+                } else {
+                    window.parent.postMessage({ address: address }, "https://tally.so");
+                    sessionStorage.setItem("tallyAddress", address);
+                    console.warn("Tally object not found. Sent via postMessage and stored in sessionStorage: " + address);
+                }
+            } catch (error) {
+                console.error("Error passing address to Tally: " + error.message);
+                sessionStorage.setItem("tallyAddress", address);
+            }
         }
-    } catch (error) {
-        console.error("Error passing address to Tally: " + error.message);
-        sessionStorage.setItem("tallyAddress", address);
-    }
-}
 
         window.onload = () => {
             if (typeof google === "undefined") {
