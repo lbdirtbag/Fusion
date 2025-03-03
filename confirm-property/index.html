@@ -4,13 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Confirm Your Property | Fusion</title>
-
-    <!-- Google Fonts: Exo -->
     <link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;600;700&display=swap" rel="stylesheet">
-
-    <!-- Google Maps API -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCFcB4m8ZvYHspksNkxNW0riR1IRissTQ&callback=initMap&libraries=places" async defer></script>
-
     <style>
         html, body {
             display: flex;
@@ -76,11 +71,7 @@
     <div class="container">
         <h1>Confirm Your Property</h1>
         <p>If the pin isn't already on your roof, click to place it. This helps us understand what kind of solar system will work best for you and improves the accuracy of your quotes.</p>
-
-        <!-- Google Map -->
         <div id="map"></div>
-
-        <!-- Display Selected Address -->
         <div class="address-container" id="selected-address">
             Address: <span id="confirmed-address">Loading...</span>
         </div>
@@ -90,7 +81,6 @@
         let map, marker;
 
         function initMap() {
-            // Get address from sessionStorage (set on Page 10 - Find Your Roof)
             let address = sessionStorage.getItem("selectedAddress") || "Mesa, AZ";
             document.getElementById("confirmed-address").innerText = address;
 
@@ -111,7 +101,6 @@
                         draggable: true
                     });
 
-                    // Pass initial address to Tally
                     passAddressToTally(address);
 
                     marker.addListener("dragend", function() {
@@ -121,24 +110,43 @@
                                 let newAddress = results[0].formatted_address;
                                 document.getElementById("confirmed-address").innerText = newAddress;
                                 sessionStorage.setItem("selectedAddress", newAddress);
-                                passAddressToTally(newAddress); // Update Tally with new address
+                                passAddressToTally(newAddress);
+                            } else {
+                                console.error("Geocode failed on drag: " + status);
+                                passAddressToTally(address); // Fallback
                             }
                         });
                     });
                 } else {
-                    console.error("Geocode error: " + status);
+                    console.error("Initial geocode failed: " + status);
                     document.getElementById("confirmed-address").innerText = "Address not found";
+                    passAddressToTally(address); // Fallback
                 }
             });
         }
 
         function passAddressToTally(address) {
-            // Send the address to the parent Tally form
-            window.parent.postMessage({ address: address }, "https://tally.so");
+            try {
+                if (window.Tally && typeof window.Tally.fillFields === "function") {
+                    window.Tally.fillFields({ address: address });
+                    console.log("Address passed to Tally: " + address);
+                } else {
+                    sessionStorage.setItem("tallyAddress", address);
+                    console.warn("Tally object not found. Address stored in sessionStorage: " + address);
+                }
+            } catch (error) {
+                console.error("Error passing address to Tally: " + error.message);
+                sessionStorage.setItem("tallyAddress", address);
+            }
         }
 
         window.onload = () => {
-            initMap();
+            if (typeof google === "undefined") {
+                console.error("Google Maps API not loaded. Retrying in 1s...");
+                setTimeout(initMap, 1000);
+            } else {
+                initMap();
+            }
         };
     </script>
 </body>
