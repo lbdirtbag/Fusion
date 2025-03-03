@@ -137,7 +137,7 @@
 
         function goToNextPage() {
             // Replace with your actual Tally form URL
-            const tallyBaseUrl = "https://tally.so/r/wM7NgY?page=13"; // UPDATE THIS WITH YOUR TALLY FORM URL
+            const tallyBaseUrl = "https://tally.so/r/wM7NgY"; // UPDATE THIS WITH YOUR TALLY FORM URL
             const nextPageUrl = `${tallyBaseUrl}?address=${encodeURIComponent(currentAddress)}`;
             console.log("Redirecting to: " + nextPageUrl);
             window.top.location.href = nextPageUrl; // Redirect parent window
