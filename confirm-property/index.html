@@ -65,6 +65,19 @@
             padding: 8px;
             border-radius: 5px;
         }
+        button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #00e2b5;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #00c99d;
+        }
     </style>
 </head>
 <body>
@@ -75,17 +88,19 @@
         <div class="address-container" id="selected-address">
             Address: <span id="confirmed-address">Loading...</span>
         </div>
+        <button onclick="goToNextPage()">Next</button>
     </div>
 
     <script>
         let map, marker;
+        let currentAddress;
 
         function initMap() {
-            let address = sessionStorage.getItem("selectedAddress") || "Mesa, AZ";
-            document.getElementById("confirmed-address").innerText = address;
+            currentAddress = sessionStorage.getItem("selectedAddress") || "Mesa, AZ";
+            document.getElementById("confirmed-address").innerText = currentAddress;
 
             const geocoder = new google.maps.Geocoder();
-            geocoder.geocode({ address: address }, function(results, status) {
+            geocoder.geocode({ address: currentAddress }, function(results, status) {
                 if (status === "OK") {
                     const location = results[0].geometry.location;
 
@@ -101,35 +116,31 @@
                         draggable: true
                     });
 
-                    passAddressToTally(address);
-
                     marker.addListener("dragend", function() {
                         const newPos = marker.getPosition();
                         geocoder.geocode({ location: newPos }, function(results, status) {
                             if (status === "OK") {
-                                let newAddress = results[0].formatted_address;
-                                document.getElementById("confirmed-address").innerText = newAddress;
-                                sessionStorage.setItem("selectedAddress", newAddress);
-                                passAddressToTally(newAddress);
+                                currentAddress = results[0].formatted_address;
+                                document.getElementById("confirmed-address").innerText = currentAddress;
+                                sessionStorage.setItem("selectedAddress", currentAddress);
                             } else {
                                 console.error("Geocode failed on drag: " + status);
-                                passAddressToTally(address); // Fallback
                             }
                         });
                     });
                 } else {
                     console.error("Initial geocode failed: " + status);
                     document.getElementById("confirmed-address").innerText = "Address not found";
-                    passAddressToTally(address); // Fallback
                 }
             });
         }
 
-        function passAddressToTally(address) {
-            console.log("Sending address via postMessage: " + address);
-            window.parent.postMessage({ address: address }, "https://tally.so");
-            sessionStorage.setItem("tallyAddress", address); // Fallback
-.truth
+        function goToNextPage() {
+            // Replace with your actual Tally form URL
+            const tallyBaseUrl = "https://tally.so/r/your-form-id"; // UPDATE THIS WITH YOUR TALLY FORM URL
+            const nextPageUrl = `${tallyBaseUrl}?address=${encodeURIComponent(currentAddress)}`;
+            console.log("Redirecting to: " + nextPageUrl);
+            window.top.location.href = nextPageUrl; // Redirect parent window
         }
 
         window.onload = () => {
