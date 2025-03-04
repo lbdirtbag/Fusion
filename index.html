@@ -90,6 +90,14 @@
             output.textContent = this.value;
             sessionStorage.setItem("electricBill", this.value);
             console.log("Electric bill saved to sessionStorage: $" + this.value);
+
+            // Inject hidden input for Tally
+            const billInput = document.createElement("input");
+            billInput.type = "hidden";
+            billInput.name = "electricBill";
+            billInput.value = this.value;
+            document.body.appendChild(billInput);
+            console.log("Hidden input added for electricBill in Slider");
         };
     </script>
 </body>
