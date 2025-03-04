@@ -5,118 +5,111 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Find Your Roof | Fusion</title>
     <link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCFcB4m8ZvYHspksNkxNW0riR1IRissTQ&libraries=places"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCFcB4m8ZvYHspksNkxNW0riR1IRissTQ&callback=initMap&libraries=places" async defer></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body {
-            font-family: 'Exo', sans-serif;
-            text-align: center;
-            background-color: #ffffff;
-            width: 100%;
-            height: auto;
-            display: block;
-            overflow: visible;
-        }
-        .container {
-            width: 100%;
-            max-width: 500px;
-            background: white;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
             align-items: center;
+            justify-content: flex-start;
+            min-height: 100dvh;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+            overflow-x: hidden;
+            overflow-y: auto;
+            font-family: 'Exo', sans-serif;
+            background-color: #ffffff;
+        }
+        .container {
+            width: 90%;
+            max-width: 500px;
+            background: white;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin: 0 auto;
-            height: auto;
-            overflow: visible;
-        }
-        h1 { font-size: 1.8rem; font-weight: 700; color: #333; margin-bottom: 10px; }
-        p { font-size: 1rem; color: #666; margin-bottom: 20px; line-height: 1.4; }
-        .input-container {
-            width: 100%;
-            max-width: 400px;
-            text-align: left;
             display: flex;
             flex-direction: column;
             align-items: center;
+            height: auto;
+            overflow: visible !important;
         }
-        .input-container label {
-            width: 100%;
-            font-weight: 600;
-            font-size: 1rem;
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
             color: #333;
-            margin-bottom: 5px;
+            margin-top: 5px;
+            margin-bottom: 10px;
         }
-        .input-container input {
+        p {
+            font-size: 1rem;
+            color: #666;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+        #pac-container {
             width: 100%;
-            padding: 10px;
+            max-width: 400px;
+            margin-bottom: 10px;
+        }
+        #pac-input {
+            width: 100%;
+            padding: 8px;
+            font-size: 1rem;
             border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: 1rem;
-        }
-        .address-container {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #333;
-            margin-top: 15px;
-            background: #f0f0f0;
-            padding: 8px;
-            border-radius: 5px;
-            display: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Find Your Roof</h1>
-        <p>We’ll use an image of your roof to determine the best system design for you.</p>
-        <div class="input-container">
-            <label for="addressInput">Address <span style="color: red;">*</span></label>
-            <input id="addressInput" type="text" placeholder="Enter a location" autocomplete="off">
-        </div>
-        <div class="address-container" id="selected-address">
-            Address Selected: <span id="confirmed-address"></span>
+        <p>Enter your address to find your roof and get started with your solar quote.</p>
+        <div id="pac-container">
+            <input id="pac-input" type="text" placeholder="Enter your address">
         </div>
     </div>
 
     <script>
-        function initAutocomplete() {
-            let input = document.getElementById("addressInput");
-            let confirmedAddress = document.getElementById("confirmed-address");
-            let addressContainer = document.getElementById("selected-address");
-            let autocomplete = new google.maps.places.Autocomplete(input);
+        let autocomplete;
 
-            autocomplete.addListener("place_changed", function() {
-                let place = autocomplete.getPlace();
+        function initMap() {
+            const input = document.getElementById("pac-input");
+            const options = {
+                types: ['address'],
+                componentRestrictions: { country: 'us' }
+            };
+
+            autocomplete = new google.maps.places.Autocomplete(input, options);
+
+            autocomplete.addListener("place_changed", () => {
+                const place = autocomplete.getPlace();
                 if (!place.geometry) {
-                    console.error("Error: Address not found.");
+                    console.error("No details available for input: '" + place.name + "'");
                     return;
                 }
 
                 let address = place.formatted_address;
-                confirmedAddress.textContent = address;
-                addressContainer.style.display = "block";
-
                 sessionStorage.setItem("selectedAddress", address);
                 console.log("Address saved to sessionStorage: " + address);
-            });
 
-            let savedAddress = sessionStorage.getItem("selectedAddress");
-            if (savedAddress) {
-                input.value = savedAddress;
-                confirmedAddress.textContent = savedAddress;
-                addressContainer.style.display = "block";
-            }
+                // Inject hidden input for Tally
+                const addressInput = document.createElement("input");
+                addressInput.type = "hidden";
+                addressInput.name = "address";
+                addressInput.value = address;
+                document.body.appendChild(addressInput);
+                console.log("Hidden input added for address in Find Your Roof");
+            });
         }
 
-        window.onload = function() {
+        window.onload = () => {
             if (typeof google === "undefined") {
                 console.error("Google Maps API not loaded. Retrying in 1s...");
-                setTimeout(initAutocomplete, 1000);
+                setTimeout(initMap, 1000);
             } else {
-                initAutocomplete();
+                initMap();
             }
         };
     </script>
