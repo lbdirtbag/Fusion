@@ -77,7 +77,6 @@
         const slider = document.getElementById("priceSlider");
         const output = document.getElementById("sliderValue");
 
-        // Initialize with default or saved value
         const savedBill = sessionStorage.getItem("electricBill");
         if (savedBill) {
             slider.value = savedBill;
