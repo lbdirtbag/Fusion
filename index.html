@@ -3,20 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sliding Scale</title>
-    
-    <!-- Google Fonts: Exo -->
+    <title>Monthly Electric Bill | Fusion</title>
     <link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;600;700&display=swap" rel="stylesheet">
-    
     <style>
-        /* Apply Exo font */
         body {
             font-family: 'Exo', sans-serif;
             text-align: center;
             padding: 20px;
             background-color: #ffffff;
         }
-
         .slider-container {
             width: 80%;
             max-width: 500px;
@@ -25,7 +20,6 @@
             padding: 5px;
             border-radius: 10px;
         }
-
         input[type="range"] {
             width: 100%;
             -webkit-appearance: none;
@@ -36,40 +30,34 @@
             border-radius: 5px;
             margin-top: 15px;
         }
-
-        /* Custom Slider Handle */
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
             width: 28px;
             height: 28px;
-            background: #00e2b5; /* Teal */
+            background: #00e2b5;
             border-radius: 50%;
             cursor: pointer;
             border: 2px solid #fff;
             box-shadow: 0 0 8px rgba(0, 226, 181, 0.5);
             transition: transform 0.2s;
         }
-
         input[type="range"]::-webkit-slider-thumb:hover {
             transform: scale(1.2);
         }
-
         input[type="range"]::-moz-range-thumb {
             width: 28px;
             height: 28px;
-            background: #00e2b5; /* Teal */
+            background: #00e2b5;
             border-radius: 50%;
             cursor: pointer;
             border: 2px solid #fff;
             box-shadow: 0 0 8px rgba(0, 226, 181, 0.5);
             transition: transform 0.2s;
         }
-
         input[type="range"]::-moz-range-thumb:hover {
             transform: scale(1.2);
         }
-
         .slider-value {
             margin-top: 15px;
             font-size: 1.6rem;
@@ -80,10 +68,7 @@
     </style>
 </head>
 <body>
-
     <div class="slider-container">
-        
-        <!-- Slider now defaults to $380 -->
         <input type="range" id="priceSlider" min="50" max="1200" step="10" value="380">
         <p class="slider-value">$<span id="sliderValue">380</span></p>
     </div>
@@ -92,18 +77,21 @@
         const slider = document.getElementById("priceSlider");
         const output = document.getElementById("sliderValue");
 
-        // Initialize the displayed value with the default slider value ($380)
-        output.textContent = slider.value;
+        // Initialize with default or saved value
+        const savedBill = sessionStorage.getItem("electricBill");
+        if (savedBill) {
+            slider.value = savedBill;
+            output.textContent = savedBill;
+        } else {
+            output.textContent = slider.value;
+            sessionStorage.setItem("electricBill", slider.value);
+        }
 
         slider.oninput = function() {
             output.textContent = this.value;
+            sessionStorage.setItem("electricBill", this.value);
+            console.log("Electric bill saved to sessionStorage: $" + this.value);
         };
-
-        slider.addEventListener("change", function() {
-            console.log("Selected Value: $" + this.value);
-            // Add form submission or API call here if needed
-        });
     </script>
-
 </body>
 </html>
