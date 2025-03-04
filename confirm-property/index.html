@@ -92,6 +92,9 @@
             document.body.appendChild(addressInput);
             console.log("Hidden input added for address in Confirm Your Property (initial)");
 
+            // Send to Google Sheet
+            sendToGoogleSheet({ address: address });
+
             const geocoder = new google.maps.Geocoder();
             geocoder.geocode({ address: address }, function(results, status) {
                 if (status === "OK") {
@@ -128,6 +131,8 @@
                                     document.body.appendChild(addressInput);
                                 }
                                 console.log("Hidden input updated for address in Confirm Your Property");
+                                // Send updated address to Google Sheet
+                                sendToGoogleSheet({ address: newAddress });
                             } else {
                                 console.error("Geocode failed on drag: " + status);
                             }
@@ -138,6 +143,19 @@
                     document.getElementById("confirmed-address").innerText = "Address not found";
                 }
             });
+        }
+
+        // Function to send data to Google Sheet
+        function sendToGoogleSheet(data) {
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbyjXwTk7meBOF7U0MobH6bjKsBxwnJ3DAgRbYX0U8FnQ8_ZSMKJjnkPDqcjxwlGaD3X4A/exec';
+            fetch(scriptURL, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(result => console.log('Google Sheet response:', result))
+            .catch(error => console.error('Error sending to Google Sheet:', error));
         }
 
         window.onload = () => {
