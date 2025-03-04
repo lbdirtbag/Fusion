@@ -101,8 +101,6 @@
                         draggable: true
                     });
 
-                    passAddressToTally(address);
-
                     marker.addListener("dragend", function() {
                         const newPos = marker.getPosition();
                         geocoder.geocode({ location: newPos }, function(results, status) {
@@ -110,34 +108,16 @@
                                 let newAddress = results[0].formatted_address;
                                 document.getElementById("confirmed-address").innerText = newAddress;
                                 sessionStorage.setItem("selectedAddress", newAddress);
-                                passAddressToTally(newAddress);
                             } else {
                                 console.error("Geocode failed on drag: " + status);
-                                passAddressToTally(address); // Fallback
                             }
                         });
                     });
                 } else {
                     console.error("Initial geocode failed: " + status);
                     document.getElementById("confirmed-address").innerText = "Address not found";
-                    passAddressToTally(address); // Fallback
                 }
             });
-        }
-
-        function passAddressToTally(address) {
-            try {
-                if (window.Tally && typeof window.Tally.fillFields === "function") {
-                    window.Tally.fillFields({ address: address });
-                    console.log("Address passed to Tally: " + address);
-                } else {
-                    sessionStorage.setItem("tallyAddress", address);
-                    console.warn("Tally object not found. Address stored in sessionStorage: " + address);
-                }
-            } catch (error) {
-                console.error("Error passing address to Tally: " + error.message);
-                sessionStorage.setItem("tallyAddress", address);
-            }
         }
 
         window.onload = () => {
