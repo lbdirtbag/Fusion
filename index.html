@@ -86,18 +86,31 @@
             sessionStorage.setItem("electricBill", slider.value);
         }
 
+        // Inject hidden input immediately with current value
+        const billInput = document.createElement("input");
+        billInput.type = "hidden";
+        billInput.name = "electricBill";
+        billInput.value = sessionStorage.getItem("electricBill") || slider.value;
+        document.body.appendChild(billInput);
+        console.log("Hidden input added for electricBill in Slider (initial)");
+
         slider.oninput = function() {
             output.textContent = this.value;
             sessionStorage.setItem("electricBill", this.value);
             console.log("Electric bill saved to sessionStorage: $" + this.value);
 
-            // Inject hidden input for Tally
-            const billInput = document.createElement("input");
-            billInput.type = "hidden";
-            billInput.name = "electricBill";
-            billInput.value = this.value;
-            document.body.appendChild(billInput);
-            console.log("Hidden input added for electricBill in Slider");
+            // Update hidden input if slider moved
+            const existingInput = document.querySelector('input[name="electricBill"]');
+            if (existingInput) {
+                existingInput.value = this.value;
+            } else {
+                const newBillInput = document.createElement("input");
+                newBillInput.type = "hidden";
+                newBillInput.name = "electricBill";
+                newBillInput.value = this.value;
+                document.body.appendChild(newBillInput);
+            }
+            console.log("Hidden input updated for electricBill in Slider");
         };
     </script>
 </body>
