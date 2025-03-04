@@ -108,6 +108,13 @@
                                 let newAddress = results[0].formatted_address;
                                 document.getElementById("confirmed-address").innerText = newAddress;
                                 sessionStorage.setItem("selectedAddress", newAddress);
+                                // Inject hidden input for Tally
+                                const addressInput = document.createElement("input");
+                                addressInput.type = "hidden";
+                                addressInput.name = "address";
+                                addressInput.value = newAddress;
+                                document.body.appendChild(addressInput);
+                                console.log("Hidden input updated for address in Confirm Your Property");
                             } else {
                                 console.error("Geocode failed on drag: " + status);
                             }
