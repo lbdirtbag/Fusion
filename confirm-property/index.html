@@ -84,6 +84,14 @@
             let address = sessionStorage.getItem("selectedAddress") || "Mesa, AZ";
             document.getElementById("confirmed-address").innerText = address;
 
+            // Inject hidden input immediately with current address
+            const addressInput = document.createElement("input");
+            addressInput.type = "hidden";
+            addressInput.name = "address";
+            addressInput.value = address;
+            document.body.appendChild(addressInput);
+            console.log("Hidden input added for address in Confirm Your Property (initial)");
+
             const geocoder = new google.maps.Geocoder();
             geocoder.geocode({ address: address }, function(results, status) {
                 if (status === "OK") {
@@ -108,12 +116,17 @@
                                 let newAddress = results[0].formatted_address;
                                 document.getElementById("confirmed-address").innerText = newAddress;
                                 sessionStorage.setItem("selectedAddress", newAddress);
-                                // Inject hidden input for Tally
-                                const addressInput = document.createElement("input");
-                                addressInput.type = "hidden";
-                                addressInput.name = "address";
-                                addressInput.value = newAddress;
-                                document.body.appendChild(addressInput);
+                                // Update hidden input if dragged
+                                const existingInput = document.querySelector('input[name="address"]');
+                                if (existingInput) {
+                                    existingInput.value = newAddress;
+                                } else {
+                                    const addressInput = document.createElement("input");
+                                    addressInput.type = "hidden";
+                                    addressInput.name = "address";
+                                    addressInput.value = newAddress;
+                                    document.body.appendChild(addressInput);
+                                }
                                 console.log("Hidden input updated for address in Confirm Your Property");
                             } else {
                                 console.error("Geocode failed on drag: " + status);
