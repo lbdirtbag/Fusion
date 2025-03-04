@@ -94,6 +94,9 @@
         document.body.appendChild(billInput);
         console.log("Hidden input added for electricBill in Slider (initial)");
 
+        // Send to Google Sheet immediately
+        sendToGoogleSheet({ electricBill: sessionStorage.getItem("electricBill") || slider.value });
+
         slider.oninput = function() {
             output.textContent = this.value;
             sessionStorage.setItem("electricBill", this.value);
@@ -111,7 +114,23 @@
                 document.body.appendChild(newBillInput);
             }
             console.log("Hidden input updated for electricBill in Slider");
+
+            // Send updated value to Google Sheet
+            sendToGoogleSheet({ electricBill: this.value });
         };
+
+        // Function to send data to Google Sheet
+        function sendToGoogleSheet(data) {
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbyjXwTk7meBOF7U0MobH6bjKsBxwnJ3DAgRbYX0U8FnQ8_ZSMKJjnkPDqcjxwlGaD3X4A/exec';
+            fetch(scriptURL, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(result => console.log('Google Sheet response:', result))
+            .catch(error => console.error('Error sending to Google Sheet:', error));
+        }
     </script>
 </body>
 </html>
