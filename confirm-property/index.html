@@ -103,9 +103,9 @@
         document.body.appendChild(addressInput);
         console.log("Hidden input added for address in Confirm Your Property (initial)");
 
-        // Send real data to Zapier (trigger once on load)
+        // Send real data to Zapier (trigger once on load, ensure Address is sent)
         let hasSent = sessionStorage.getItem('dataSent') === 'true';
-        if (!hasSent) {
+        if (!hasSent && (sessionStorage.getItem('emailAddress') && sessionStorage.getItem('selectedAddress'))) {
             sendToGoogleSheet();
             sessionStorage.setItem('dataSent', 'true'); // Prevent multiple sends
         }
@@ -146,9 +146,9 @@
                                 document.body.appendChild(newAddressInput);
                             }
                             console.log("Hidden input updated for address in Confirm Your Property");
-                            // Send real data to Zapier (trigger once on drag)
+                            // Send real data to Zapier (trigger once on drag, ensure Address is sent)
                             let hasSentDrag = sessionStorage.getItem('dataSentDrag') === 'true';
-                            if (!hasSentDrag) {
+                            if (!hasSentDrag && (sessionStorage.getItem('emailAddress') && newAddress)) {
                                 sendToGoogleSheet();
                                 sessionStorage.setItem('dataSentDrag', 'true'); // Prevent multiple sends
                             }
@@ -164,23 +164,27 @@
         });
     }
 
-    // Function to send real data to Zapier webhook (updated for correct field names)
+    // Function to send real data to Zapier webhook (updated for correct field names and debugging)
     function sendToGoogleSheet() {
+        const email = sessionStorage.getItem('emailAddress') || 'test@example.com';
+        const address = sessionStorage.getItem('selectedAddress') || sessionStorage.getItem('address') || '3042 E El Moro Ave, Mesa, AZ 85204, USA';
+        const electricBill = sessionStorage.getItem('electricBillFinal') || sessionStorage.getItem('electricBill') || '380';
+
         const webhookURL = 'https://hooks.zapier.com/hooks/catch/21358037/2qmn180/'; // Your Zapier webhook URL
         fetch(webhookURL, {
             method: 'POST',
             body: JSON.stringify({
-                'Email Address': sessionStorage.getItem('emailAddress') || 'test@example.com', // Real Tally email or fallback
-                'Address': sessionStorage.getItem('selectedAddress') || sessionStorage.getItem('address') || '3042 E El Moro Ave, Mesa, AZ 85204, USA', // Real address from session or fallback
-                'Electric Bill': sessionStorage.getItem('electricBillFinal') || sessionStorage.getItem('electricBill') || '380' // Real electric bill from index.html or fallback
+                'Email Address': email, // Real Tally email or fallback
+                'Address': address, // Real address from session or fallback
+                'Electric Bill': electricBill // Real electric bill from index.html or fallback
             }),
             headers: { 'Content-Type': 'application/json' },
             mode: 'no-cors' // Temporary workaround for CORS/CORB
         })
         .then(() => console.log('Zapier request sent (no-cors mode) with payload:', JSON.stringify({
-            'Email Address': sessionStorage.getItem('emailAddress') || 'test@example.com',
-            'Address': sessionStorage.getItem('selectedAddress') || sessionStorage.getItem('address') || '3042 E El Moro Ave, Mesa, AZ 85204, USA',
-            'Electric Bill': sessionStorage.getItem('electricBillFinal') || sessionStorage.getItem('electricBill') || '380'
+            'Email Address': email,
+            'Address': address,
+            'Electric Bill': electricBill
         })))
         .catch(error => console.error('Error sending to Zapier (no-cors):', error));
     }
