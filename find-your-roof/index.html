@@ -72,76 +72,72 @@
     </div>
 
     <script>
-        // Store Tally fields in sessionStorage (assumed passed via Tally's URL or form)
-        const urlParams = new URLSearchParams(window.location.search);
-        sessionStorage.setItem('firstName', urlParams.get('firstName') || '');
-        sessionStorage.setItem('lastName', urlParams.get('lastName') || '');
-        sessionStorage.setItem('emailAddress', urlParams.get('emailAddress') || '');
-        sessionStorage.setItem('zipCode', urlParams.get('zipCode') || '');
+    // Hardcode test values for Zapier (no sessionStorage or Tally dependency)
+    console.log('Forcing test data for Zapier update');
 
-        let autocomplete;
+    let autocomplete;
 
-        function initMap() {
-            const input = document.getElementById("pac-input");
-            const options = {
-                types: ['address'],
-                componentRestrictions: { country: 'us' }
-            };
-
-            autocomplete = new google.maps.places.Autocomplete(input, options);
-
-            autocomplete.addListener("place_changed", () => {
-                const place = autocomplete.getPlace();
-                if (!place.geometry) {
-                    console.error("No details available for input: '" + place.name + "'");
-                    return;
-                }
-
-                let address = place.formatted_address;
-                sessionStorage.setItem("selectedAddress", address);
-                console.log("Address saved to sessionStorage: " + address + ", Value in sessionStorage: " + sessionStorage.getItem("selectedAddress"));
-
-                // Inject hidden input for reference (won’t affect Tally due to restrictions)
-                const addressInput = document.createElement("input");
-                addressInput.type = "hidden";
-                addressInput.name = "address";
-                addressInput.value = address;
-                document.body.appendChild(addressInput);
-                console.log("Hidden input added for address in Find Your Roof");
-
-                // Send to Zapier webhook (new addition, preserving original Google Sheet call as a comment)
-                sendToGoogleSheet({ address: address });
-                /*
-                // Original Google Sheet call (commented out for Zapier integration)
-                sendToGoogleSheet({ address: address });
-                */
-            });
-        }
-
-        // Function to send data to Zapier webhook (updated with new URL)
-        function sendToGoogleSheet(data) {
-            const webhookURL = 'https://hooks.zapier.com/hooks/catch/21358037/2qmn180/'; // New Zapier webhook URL
-            fetch(webhookURL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    'Email Address': sessionStorage.getItem('emailAddress') || '', // Match Google Sheet column
-                    address: data.address || sessionStorage.getItem('selectedAddress') || '' // From geocoding
-                }),
-                headers: { 'Content-Type': 'application/json' },
-                mode: 'no-cors' // Temporary workaround for CORS/CORB
-            })
-            .then(() => console.log('Zapier request sent (no-cors mode)'))
-            .catch(error => console.error('Error sending to Zapier (no-cors):', error));
-        }
-
-        window.onload = () => {
-            if (typeof google === "undefined") {
-                console.error("Google Maps API not loaded. Retrying in 1s...");
-                setTimeout(initMap, 1000);
-            } else {
-                initMap();
-            }
+    function initMap() {
+        const input = document.getElementById("pac-input");
+        const options = {
+            types: ['address'],
+            componentRestrictions: { country: 'us' }
         };
-    </script>
+
+        autocomplete = new google.maps.places.Autocomplete(input, options);
+
+        autocomplete.addListener("place_changed", () => {
+            const place = autocomplete.getPlace();
+            if (!place.geometry) {
+                console.error("No details available for input: '" + place.name + "'");
+                return;
+            }
+
+            let address = place.formatted_address;
+            sessionStorage.setItem("selectedAddress", address);
+            console.log("Address saved to sessionStorage: " + address + ", Value in sessionStorage: " + sessionStorage.getItem("selectedAddress"));
+
+            // Inject hidden input for reference (won’t affect Tally due to restrictions)
+            const addressInput = document.createElement("input");
+            addressInput.type = "hidden";
+            addressInput.name = "address";
+            addressInput.value = address;
+            document.body.appendChild(addressInput);
+            console.log("Hidden input added for address in Find Your Roof");
+
+            // Send hardcoded data to Zapier (trigger once)
+            let hasSent = sessionStorage.getItem('addressSent') === 'true';
+            if (!hasSent) {
+                sendToGoogleSheet({ address: address });
+                sessionStorage.setItem('addressSent', 'true'); // Prevent multiple sends
+            }
+        });
+    }
+
+    // Function to send hardcoded data to Zapier webhook
+    function sendToGoogleSheet(data) {
+        const webhookURL = 'https://hooks.zapier.com/hooks/catch/21358037/2qmn180/'; // Your Zapier webhook URL
+        fetch(webhookURL, {
+            method: 'POST',
+            body: JSON.stringify({
+                'Email Address': 'test@example.com', // Hardcoded to ensure lookup works
+                'Address': '3042 E El Moro Ave, Mesa, AZ 85204, USA' // Hardcoded test value, match Google Sheet column
+            }),
+            headers: { 'Content-Type': 'application/json' },
+            mode: 'no-cors' // Temporary workaround for CORS/CORB
+        })
+        .then(() => console.log('Zapier request sent (no-cors mode)'))
+        .catch(error => console.error('Error sending to Zapier (no-cors):', error));
+    }
+
+    window.onload = () => {
+        if (typeof google === "undefined") {
+            console.error("Google Maps API not loaded. Retrying in 1s...");
+            setTimeout(initMap, 1000);
+        } else {
+            initMap();
+        }
+    };
+</script>
 </body>
 </html>
