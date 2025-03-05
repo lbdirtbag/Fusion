@@ -3,133 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monthly Electric Bill | Fusion</title>
-    <link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Electric Bill Slider</title>
     <style>
         body {
-            font-family: 'Exo', sans-serif;
-            text-align: center;
+            font-family: Arial, sans-serif;
+            margin: 0;
             padding: 20px;
-            background-color: #ffffff;
+            text-align: center;
         }
         .slider-container {
-            width: 80%;
-            max-width: 500px;
-            margin: 10px auto;
-            background: white;
-            padding: 5px;
-            border-radius: 10px;
+            margin: 20px 0;
         }
-        input[type="range"] {
-            width: 100%;
-            -webkit-appearance: none;
-            appearance: none;
-            height: 8px;
-            background: #ddd;
-            outline: none;
-            border-radius: 5px;
-            margin-top: 15px;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 28px;
-            height: 28px;
-            background: #00e2b5;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid #fff;
-            box-shadow: 0 0 8px rgba(0, 226, 181, 0.5);
-            transition: transform 0.2s;
-        }
-        input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-        }
-        input[type="range"]::-moz-range-thumb {
-            width: 28px;
-            height: 28px;
-            background: #00e2b5;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid #fff;
-            box-shadow: 0 0 8px rgba(0, 226, 181, 0.5);
-            transition: transform 0.2s;
-        }
-        input[type="range"]::-moz-range-thumb:hover {
-            transform: scale(1.2);
-        }
-        .slider-value {
-            margin-top: 15px;
-            font-size: 1.6rem;
-            font-weight: 700;
+        #electricBillValue {
+            font-size: 24px;
+            font-weight: bold;
             color: #333;
-            letter-spacing: 0.5px;
+        }
+        #submitBtn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #submitBtn:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
+    <h2>Estimate Your Monthly Electric Bill</h2>
     <div class="slider-container">
-        <input type="range" id="priceSlider" min="50" max="1200" step="10" value="380">
-        <p class="slider-value">$<span id="sliderValue">380</span></p>
+        <label for="electricBill">Monthly Electric Bill ($):</label><br>
+        <input type="range" id="electricBill" min="0" max="1000" value="380" step="10">
+        <p>Selected Value: $<span id="electricBillValue">380</span></p>
     </div>
+    <button id="submitBtn">Submit</button>
 
     <script>
-        const slider = document.getElementById("priceSlider");
-        const output = document.getElementById("sliderValue");
+        // Store Tally fields in sessionStorage (assumed passed via Tally's URL or form)
+        const urlParams = new URLSearchParams(window.location.search);
+        sessionStorage.setItem('firstName', urlParams.get('firstName') || '');
+        sessionStorage.setItem('lastName', urlParams.get('lastName') || '');
+        sessionStorage.setItem('emailAddress', urlParams.get('emailAddress') || '');
+        sessionStorage.setItem('zipCode', urlParams.get('zipCode') || '');
 
-        const savedBill = sessionStorage.getItem("electricBill");
-        if (savedBill) {
-            slider.value = savedBill;
-            output.textContent = savedBill;
-        } else {
-            output.textContent = slider.value;
-            sessionStorage.setItem("electricBill", slider.value);
-        }
+        // Slider functionality
+        const slider = document.getElementById('electricBill');
+        const valueDisplay = document.getElementById('electricBillValue');
 
-        // Inject hidden input immediately with current value
-        const billInput = document.createElement("input");
-        billInput.type = "hidden";
-        billInput.name = "electricBill";
-        billInput.value = sessionStorage.getItem("electricBill") || slider.value;
-        document.body.appendChild(billInput);
-        console.log("Hidden input added for electricBill in Slider (initial)");
+        slider.addEventListener('input', function() {
+            valueDisplay.textContent = this.value;
+            sessionStorage.setItem('electricbill', this.value); // Store in sessionStorage
+        });
 
-        // Send to Google Sheet immediately
-        sendToGoogleSheet({ electricBill: sessionStorage.getItem("electricBill") || slider.value });
+        // Submit button functionality
+        document.getElementById('submitBtn').addEventListener('click', function() {
+            const electricBill = sessionStorage.getItem('electricbill') || '380'; // Default to 380 if not set
+            sendToGoogleSheet({ electricbill: electricBill });
+            window.location.href = 'https://forms.fusionpowerco.com/wM7NgY#next'; // Navigate to next Tally page
+        });
 
-        slider.oninput = function() {
-            output.textContent = this.value;
-            sessionStorage.setItem("electricBill", this.value);
-            console.log("Electric bill saved to sessionStorage: $" + this.value);
-
-            // Update hidden input if slider moved
-            const existingInput = document.querySelector('input[name="electricBill"]');
-            if (existingInput) {
-                existingInput.value = this.value;
-            } else {
-                const newBillInput = document.createElement("input");
-                newBillInput.type = "hidden";
-                newBillInput.name = "electricBill";
-                newBillInput.value = this.value;
-                document.body.appendChild(newBillInput);
-            }
-            console.log("Hidden input updated for electricBill in Slider");
-
-            // Send updated value to Google Sheet
-            sendToGoogleSheet({ electricBill: this.value });
-        };
-
-        // Function to send data to Google Sheet
+        // Function to send data to Zapier webhook
         function sendToGoogleSheet(data) {
-            const scriptURL = 'https://script.google.com/macros/s/AKfycbyjXwTk7meBOF7U0MobH6bjKsBxwnJ3DAgRbYX0U8FnQ8_ZSMKJjnkPDqcjxwlGaD3X4A/exec';
-            fetch(scriptURL, {
+            const webhookURL = 'https://hooks.zapier.com/hooks/catch/...'; // Replace with your Zapier webhook URL
+            fetch(webhookURL, {
                 method: 'POST',
-                body: JSON.stringify(data),
-                headers: { 'Content-Type': 'application/json' }
+                body: JSON.stringify({
+                    emailaddress: sessionStorage.getItem('emailAddress') || '', // Link to Tally submission
+                    electricbill: data.electricbill || sessionStorage.getItem('electricbill') || '380' // From slider
+                }),
+                headers: { 'Content-Type': 'application/json' },
+                mode: 'no-cors' // Temporary workaround for CORS/CORB
             })
-            .then(response => response.json())
-            .then(result => console.log('Google Sheet response:', result))
-            .catch(error => console.error('Error sending to Google Sheet:', error));
+            .then(() => console.log('Zapier request sent (no-cors mode)'))
+            .catch(error => console.error('Error sending to Zapier (no-cors):', error));
         }
     </script>
 </body>
