@@ -74,77 +74,77 @@
     </div>
 
     <script>
-    // Hardcode a test emailaddress to ensure it’s sent to Zapier
-    sessionStorage.setItem('emailAddress', 'test@example.com'); // Temporary hardcoded value
-    sessionStorage.setItem('firstName', '');
-    sessionStorage.setItem('lastName', '');
-    sessionStorage.setItem('zipCode', '');
+        // Hardcode a test emailaddress to ensure it’s sent to Zapier
+        sessionStorage.setItem('emailAddress', 'test@example.com'); // Temporary hardcoded value
+        sessionStorage.setItem('firstName', '');
+        sessionStorage.setItem('lastName', '');
+        sessionStorage.setItem('zipCode', '');
 
-    // Debug: Log the emailAddress to console
-    console.log('Stored emailAddress in sessionStorage:', sessionStorage.getItem('emailAddress'));
+        // Debug: Log the emailAddress to console
+        console.log('Stored emailAddress in sessionStorage:', sessionStorage.getItem('emailAddress'));
 
-    // Slider functionality (your original logic, unchanged)
-    const slider = document.getElementById("priceSlider");
-    const output = document.getElementById("sliderValue");
+        // Slider functionality (your original logic, unchanged)
+        const slider = document.getElementById("priceSlider");
+        const output = document.getElementById("sliderValue");
 
-    const savedBill = sessionStorage.getItem("electricBill");
-    if (savedBill) {
-        slider.value = savedBill;
-        output.textContent = savedBill;
-    } else {
-        output.textContent = slider.value;
-        sessionStorage.setItem("electricBill", slider.value);
-    }
-
-    // Inject hidden input immediately with current value
-    const billInput = document.createElement("input");
-    billInput.type = "hidden";
-    billInput.name = "electricBill";
-    billInput.value = sessionStorage.getItem("electricBill") || slider.value;
-    document.body.appendChild(billInput);
-    console.log("Hidden input added for electricBill in Slider (initial)");
-
-    slider.oninput = function() {
-        output.textContent = this.value;
-        sessionStorage.setItem("electricBill", this.value);
-        console.log("Electric bill saved to sessionStorage: $" + this.value);
-
-        // Update hidden input if slider moved
-        const existingInput = document.querySelector('input[name="electricBill"]');
-        if (existingInput) {
-            existingInput.value = this.value;
+        const savedBill = sessionStorage.getItem("electricBill");
+        if (savedBill) {
+            slider.value = savedBill;
+            output.textContent = savedBill;
         } else {
-            const newBillInput = document.createElement("input");
-            newBillInput.type = "hidden";
-            newBillInput.name = "electricBill";
-            newBillInput.value = this.value;
-            document.body.appendChild(newBillInput);
+            output.textContent = slider.value;
+            sessionStorage.setItem("electricBill", slider.value);
         }
-        console.log("Hidden input updated for electricBill in Slider");
-    };
 
-    // Send data to Zapier on slider change (your original logic, updated for hardcoded email)
-    slider.addEventListener('change', function() {
-        const electricBill = sessionStorage.getItem('electricBill') || '380';
-        sendToGoogleSheet({ electricbill: electricBill });
-        window.location.href = 'https://forms.fusionpowerco.com/wM7NgY#next';
-    });
+        // Inject hidden input immediately with current value
+        const billInput = document.createElement("input");
+        billInput.type = "hidden";
+        billInput.name = "electricBill";
+        billInput.value = sessionStorage.getItem("electricBill") || slider.value;
+        document.body.appendChild(billInput);
+        console.log("Hidden input added for electricBill in Slider (initial)");
 
-    // Function to send data to Zapier webhook (updated with hardcoded email)
-    function sendToGoogleSheet(data) {
-        const webhookURL = 'https://hooks.zapier.com/hooks/catch/21358037/2qmf1g4/'; // Your Zapier webhook URL
-        fetch(webhookURL, {
-            method: 'POST',
-            body: JSON.stringify({
-                emailaddress: 'test@example.com', // Hardcoded to ensure it’s sent
-                electricbill: data.electricbill || sessionStorage.getItem('electricBill') || '380'
-            }),
-            headers: { 'Content-Type': 'application/json' },
-            mode: 'no-cors'
-        })
-        .then(() => console.log('Zapier request sent (no-cors mode)'))
-        .catch(error => console.error('Error sending to Zapier (no-cors):', error));
-    }
-</script>
+        slider.oninput = function() {
+            output.textContent = this.value;
+            sessionStorage.setItem("electricBill", this.value);
+            console.log("Electric bill saved to sessionStorage: $" + this.value);
+
+            // Update hidden input if slider moved
+            const existingInput = document.querySelector('input[name="electricBill"]');
+            if (existingInput) {
+                existingInput.value = this.value;
+            } else {
+                const newBillInput = document.createElement("input");
+                newBillInput.type = "hidden";
+                newBillInput.name = "electricBill";
+                newBillInput.value = this.value;
+                document.body.appendChild(newBillInput);
+            }
+            console.log("Hidden input updated for electricBill in Slider");
+        };
+
+        // Send data to Zapier on slider change (your original logic, updated for hardcoded email)
+        slider.addEventListener('change', function() {
+            const electricBill = sessionStorage.getItem('electricBill') || '380';
+            sendToGoogleSheet({ electricbill: electricBill });
+            window.location.href = 'https://forms.fusionpowerco.com/wM7NgY#next';
+        });
+
+        // Function to send data to Zapier webhook (updated to match Google Sheet column)
+        function sendToGoogleSheet(data) {
+            const webhookURL = 'https://hooks.zapier.com/hooks/catch/21358037/2qmf1g4/'; // Your Zapier webhook URL
+            fetch(webhookURL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    'Email Address': 'test@example.com', // Match Google Sheet column exactly
+                    electricbill: data.electricbill || sessionStorage.getItem('electricBill') || '380'
+                }),
+                headers: { 'Content-Type': 'application/json' },
+                mode: 'no-cors'
+            })
+            .then(() => console.log('Zapier request sent (no-cors mode)'))
+            .catch(error => console.error('Error sending to Zapier (no-cors):', error));
+        }
+    </script>
 </body>
 </html>
