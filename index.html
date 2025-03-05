@@ -74,82 +74,69 @@
     </div>
 
     <script>
-        // Store Tally fields in sessionStorage (real data from URL parameters)
-        const urlParams = new URLSearchParams(window.location.search);
-        sessionStorage.setItem('emailAddress', urlParams.get('emailAddress') || '');
-        sessionStorage.setItem('firstName', urlParams.get('firstName') || '');
-        sessionStorage.setItem('lastName', urlParams.get('lastName') || '');
-        sessionStorage.setItem('zipCode', urlParams.get('zipCode') || '');
+    // Store Tally fields in sessionStorage (real data from URL parameters, with fallback)
+    const urlParams = new URLSearchParams(window.location.search);
+    sessionStorage.setItem('emailAddress', urlParams.get('emailAddress') || 'test@example.com'); // Fallback to test email if missing
+    sessionStorage.setItem('firstName', urlParams.get('firstName') || '');
+    sessionStorage.setItem('lastName', urlParams.get('lastName') || '');
+    sessionStorage.setItem('zipCode', urlParams.get('zipCode') || '');
 
-        // Debug: Log the emailAddress to console
-        console.log('Stored emailAddress in sessionStorage:', sessionStorage.getItem('emailAddress'));
+    // Debug: Log the emailAddress to console
+    console.log('Stored emailAddress in sessionStorage:', sessionStorage.getItem('emailAddress'));
 
-        // Slider functionality (your original logic, unchanged)
-        const slider = document.getElementById("priceSlider");
-        const output = document.getElementById("sliderValue");
+    // Slider functionality (your original logic, unchanged)
+    const slider = document.getElementById("priceSlider");
+    const output = document.getElementById("sliderValue");
 
-        const savedBill = sessionStorage.getItem("electricBill");
-        if (savedBill) {
-            slider.value = savedBill;
-            output.textContent = savedBill;
+    const savedBill = sessionStorage.getItem("electricBill");
+    if (savedBill) {
+        slider.value = savedBill;
+        output.textContent = savedBill;
+    } else {
+        output.textContent = slider.value;
+        sessionStorage.setItem("electricBill", slider.value);
+    }
+
+    // Inject hidden input immediately with current value
+    const billInput = document.createElement("input");
+    billInput.type = "hidden";
+    billInput.name = "electricBill";
+    billInput.value = sessionStorage.getItem("electricBill") || slider.value;
+    document.body.appendChild(billInput);
+    console.log("Hidden input added for electricBill in Slider (initial)");
+
+    slider.oninput = function() {
+        output.textContent = this.value;
+        sessionStorage.setItem("electricBill", this.value);
+        console.log("Electric bill saved to sessionStorage: $" + this.value);
+
+        // Update hidden input if slider moved
+        const existingInput = document.querySelector('input[name="electricBill"]');
+        if (existingInput) {
+            existingInput.value = this.value;
         } else {
-            output.textContent = slider.value;
-            sessionStorage.setItem("electricBill", slider.value);
+            const newBillInput = document.createElement("input");
+            newBillInput.type = "hidden";
+            newBillInput.name = "electricBill";
+            newBillInput.value = this.value;
+            document.body.appendChild(newBillInput);
         }
+        console.log("Hidden input updated for electricBill in Slider");
+    };
 
-        // Inject hidden input immediately with current value
-        const billInput = document.createElement("input");
-        billInput.type = "hidden";
-        billInput.name = "electricBill";
-        billInput.value = sessionStorage.getItem("electricBill") || slider.value;
-        document.body.appendChild(billInput);
-        console.log("Hidden input added for electricBill in Slider (initial)");
-
-        slider.oninput = function() {
-            output.textContent = this.value;
-            sessionStorage.setItem("electricBill", this.value);
-            console.log("Electric bill saved to sessionStorage: $" + this.value);
-
-            // Update hidden input if slider moved
-            const existingInput = document.querySelector('input[name="electricBill"]');
-            if (existingInput) {
-                existingInput.value = this.value;
-            } else {
-                const newBillInput = document.createElement("input");
-                newBillInput.type = "hidden";
-                newBillInput.name = "electricBill";
-                newBillInput.value = this.value;
-                document.body.appendChild(newBillInput);
-            }
-            console.log("Hidden input updated for electricBill in Slider");
-        };
-
-        // Send real data to Zapier on slider change (trigger once, no navigation)
-        let hasSent = false; // Prevent multiple sends
-        slider.addEventListener('change', function() {
-            if (!hasSent) {
-                const electricBill = sessionStorage.getItem('electricBill') || '380';
-                sendToGoogleSheet({ electricBill: electricBill });
-                hasSent = true; // Ensure this only runs once per session
-                console.log('Sent electricBill to Zapier, waiting for Tally to proceed');
-            }
-        });
-
-        // Function to send real data to Zapier webhook
-        function sendToGoogleSheet(data) {
-            const webhookURL = 'https://hooks.zapier.com/hooks/catch/21358037/2qmn180/'; // Your Zapier webhook URL
-            fetch(webhookURL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    'Email Address': sessionStorage.getItem('emailAddress') || '', // Real Tally email
-                    'Electric Bill': data.electricBill || '380' // Real electric bill from slider
-                }),
-                headers: { 'Content-Type': 'application/json' },
-                mode: 'no-cors'
-            })
-            .then(() => console.log('Zapier request sent (no-cors mode)'))
-            .catch(error => console.error('Error sending to Zapier (no-cors):', error));
+    // Store final electricBill for later use (no Zapier send here)
+    let hasSent = false; // Prevent multiple stores
+    slider.addEventListener('change', function() {
+        if (!hasSent) {
+            const electricBill = sessionStorage.getItem('electricBill') || '380';
+            sessionStorage.setItem('electricBillFinal', electricBill); // Store final value for confirm-property
+            console.log('Stored final electricBill in sessionStorage:', electricBill);
+            hasSent = true; // Ensure this only runs once per session
+            console.log('Electric bill data prepared for later Zapier send, waiting for Tally to proceed');
         }
-    </script>
+    });
+
+    // No direct Zapier send here—data will be sent from confirm-property
+</script>
 </body>
 </html>
