@@ -118,13 +118,13 @@
             });
         }
 
-        // Function to send data to Zapier webhook (new addition, replacing Google Sheet call)
+        // Function to send data to Zapier webhook (updated with new URL)
         function sendToGoogleSheet(data) {
-            const webhookURL = 'https://hooks.zapier.com/hooks/catch/21358037/2qmf1g4/'; // Replace with your Zapier webhook URL
+            const webhookURL = 'https://hooks.zapier.com/hooks/catch/21358037/2qmn180/'; // New Zapier webhook URL
             fetch(webhookURL, {
                 method: 'POST',
                 body: JSON.stringify({
-                    emailaddress: sessionStorage.getItem('emailAddress') || '', // Link to Tally submission
+                    'Email Address': sessionStorage.getItem('emailAddress') || '', // Match Google Sheet column
                     address: data.address || sessionStorage.getItem('selectedAddress') || '' // From geocoding
                 }),
                 headers: { 'Content-Type': 'application/json' },
