@@ -78,108 +78,108 @@
     </div>
 
     <script>
-        // Store Tally fields in sessionStorage (assumed passed via Tally's URL or form)
-        const urlParams = new URLSearchParams(window.location.search);
-        sessionStorage.setItem('firstName', urlParams.get('firstName') || '');
-        sessionStorage.setItem('lastName', urlParams.get('lastName') || '');
-        sessionStorage.setItem('emailAddress', urlParams.get('emailAddress') || '');
-        sessionStorage.setItem('zipCode', urlParams.get('zipCode') || '');
+    // Hardcode test values for Zapier (no sessionStorage or Tally dependency)
+    console.log('Forcing test data for Zapier update');
 
-        let map, marker;
+    let map, marker;
 
-        function initMap() {
-            let address = sessionStorage.getItem("selectedAddress") || "Mesa, AZ";
-            document.getElementById("confirmed-address").innerText = address;
+    function initMap() {
+        let address = "3042 E El Moro Ave, Mesa, AZ 85204, USA"; // Hardcoded test address
+        document.getElementById("confirmed-address").innerText = address;
 
-            // Inject hidden input immediately with current address
-            const addressInput = document.createElement("input");
-            addressInput.type = "hidden";
-            addressInput.name = "address";
-            addressInput.value = address;
-            document.body.appendChild(addressInput);
-            console.log("Hidden input added for address in Confirm Your Property (initial)");
+        // Inject hidden input immediately with current address
+        const addressInput = document.createElement("input");
+        addressInput.type = "hidden";
+        addressInput.name = "address";
+        addressInput.value = address;
+        document.body.appendChild(addressInput);
+        console.log("Hidden input added for address in Confirm Your Property (initial)");
 
-            // Send to Zapier webhook (new addition, preserving original Google Sheet call as a comment)
+        // Send hardcoded data to Zapier (trigger once on load)
+        let hasSent = sessionStorage.getItem('addressSent') === 'true';
+        if (!hasSent) {
             sendToGoogleSheet({ address: address });
-            /*
-            // Original Google Sheet call (commented out for Zapier integration)
-            sendToGoogleSheet({ address: address });
-            */
+            sessionStorage.setItem('addressSent', 'true'); // Prevent multiple sends
+        }
 
-            const geocoder = new google.maps.Geocoder();
-            geocoder.geocode({ address: address }, function(results, status) {
-                if (status === "OK") {
-                    const location = results[0].geometry.location;
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ address: address }, function(results, status) {
+            if (status === "OK") {
+                const location = results[0].geometry.location;
 
-                    map = new google.maps.Map(document.getElementById("map"), {
-                        center: location,
-                        zoom: 18,
-                        mapTypeId: "satellite"
-                    });
+                map = new google.maps.Map(document.getElementById("map"), {
+                    center: location,
+                    zoom: 18,
+                    mapTypeId: "satellite"
+                });
 
-                    marker = new google.maps.Marker({
-                        position: location,
-                        map: map,
-                        draggable: true
-                    });
+                marker = new google.maps.Marker({
+                    position: location,
+                    map: map,
+                    draggable: true
+                });
 
-                    marker.addListener("dragend", function() {
-                        const newPos = marker.getPosition();
-                        geocoder.geocode({ location: newPos }, function(results, status) {
-                            if (status === "OK") {
-                                let newAddress = results[0].formatted_address;
-                                document.getElementById("confirmed-address").innerText = newAddress;
-                                sessionStorage.setItem("selectedAddress", newAddress);
-                                // Update hidden input if dragged
-                                const existingInput = document.querySelector('input[name="address"]');
-                                if (existingInput) {
-                                    existingInput.value = newAddress;
-                                } else {
-                                    const newAddressInput = document.createElement("input");
-                                    newAddressInput.type = "hidden";
-                                    newAddressInput.name = "address";
-                                    newAddressInput.value = newAddress;
-                                    document.body.appendChild(newAddressInput);
-                                }
-                                console.log("Hidden input updated for address in Confirm Your Property");
-                                // Send updated address to Zapier webhook
-                                sendToGoogleSheet({ address: newAddress });
+                marker.addListener("dragend", function() {
+                    const newPos = marker.getPosition();
+                    geocoder.geocode({ location: newPos }, function(results, status) {
+                        if (status === "OK") {
+                            let newAddress = results[0].formatted_address;
+                            document.getElementById("confirmed-address").innerText = newAddress;
+                            sessionStorage.setItem("selectedAddress", newAddress);
+                            // Update hidden input if dragged
+                            const existingInput = document.querySelector('input[name="address"]');
+                            if (existingInput) {
+                                existingInput.value = newAddress;
                             } else {
-                                console.error("Geocode failed on drag: " + status);
+                                const newAddressInput = document.createElement("input");
+                                newAddressInput.type = "hidden";
+                                newAddressInput.name = "address";
+                                newAddressInput.value = newAddress;
+                                document.body.appendChild(newAddressInput);
                             }
-                        });
+                            console.log("Hidden input updated for address in Confirm Your Property");
+                            // Send hardcoded data to Zapier (trigger once on drag)
+                            let hasSentDrag = sessionStorage.getItem('addressSentDrag') === 'true';
+                            if (!hasSentDrag) {
+                                sendToGoogleSheet({ address: newAddress });
+                                sessionStorage.setItem('addressSentDrag', 'true'); // Prevent multiple sends
+                            }
+                        } else {
+                            console.error("Geocode failed on drag: " + status);
+                        }
                     });
-                } else {
-                    console.error("Initial geocode failed: " + status);
-                    document.getElementById("confirmed-address").innerText = "Address not found";
-                }
-            });
-        }
-
-        // Function to send data to Zapier webhook (updated with new URL)
-        function sendToGoogleSheet(data) {
-            const webhookURL = 'https://hooks.zapier.com/hooks/catch/21358037/2qmn180/'; // New Zapier webhook URL
-            fetch(webhookURL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    'Email Address': sessionStorage.getItem('emailAddress') || '', // Match Google Sheet column
-                    address: data.address || sessionStorage.getItem('selectedAddress') || '' // From sessionStorage or drag
-                }),
-                headers: { 'Content-Type': 'application/json' },
-                mode: 'no-cors' // Temporary workaround for CORS/CORB
-            })
-            .then(() => console.log('Zapier request sent (no-cors mode)'))
-            .catch(error => console.error('Error sending to Zapier (no-cors):', error));
-        }
-
-        window.onload = () => {
-            if (typeof google === "undefined") {
-                console.error("Google Maps API not loaded. Retrying in 1s...");
-                setTimeout(initMap, 1000);
+                });
             } else {
-                initMap();
+                console.error("Initial geocode failed: " + status);
+                document.getElementById("confirmed-address").innerText = "Address not found";
             }
-        };
-    </script>
+        });
+    }
+
+    // Function to send hardcoded data to Zapier webhook
+    function sendToGoogleSheet(data) {
+        const webhookURL = 'https://hooks.zapier.com/hooks/catch/21358037/2qmn180/'; // Your Zapier webhook URL
+        fetch(webhookURL, {
+            method: 'POST',
+            body: JSON.stringify({
+                'Email Address': 'test@example.com', // Hardcoded to ensure lookup works
+                'Address': '3042 E El Moro Ave, Mesa, AZ 85204, USA' // Hardcoded test value, match Google Sheet column
+            }),
+            headers: { 'Content-Type': 'application/json' },
+            mode: 'no-cors' // Temporary workaround for CORS/CORB
+        })
+        .then(() => console.log('Zapier request sent (no-cors mode)'))
+        .catch(error => console.error('Error sending to Zapier (no-cors):', error));
+    }
+
+    window.onload = () => {
+        if (typeof google === "undefined") {
+            console.error("Google Maps API not loaded. Retrying in 1s...");
+            setTimeout(initMap, 1000);
+        } else {
+            initMap();
+        }
+    };
+</script>
 </body>
 </html>
