@@ -74,8 +74,8 @@
     </div>
 
     <script>
-    // Store Tally fields in sessionStorage (using a test email since Tally isn’t passing it)
-    sessionStorage.setItem('emailAddress', 'test@example.com'); // Temporary test value
+    // Hardcode a test emailaddress to ensure it’s sent to Zapier
+    sessionStorage.setItem('emailAddress', 'test@example.com'); // Temporary hardcoded value
     sessionStorage.setItem('firstName', '');
     sessionStorage.setItem('lastName', '');
     sessionStorage.setItem('zipCode', '');
@@ -123,20 +123,20 @@
         console.log("Hidden input updated for electricBill in Slider");
     };
 
-    // Send data to Zapier on slider change (your original logic, updated for test email)
+    // Send data to Zapier on slider change (your original logic, updated for hardcoded email)
     slider.addEventListener('change', function() {
         const electricBill = sessionStorage.getItem('electricBill') || '380';
         sendToGoogleSheet({ electricbill: electricBill });
         window.location.href = 'https://forms.fusionpowerco.com/wM7NgY#next';
     });
 
-    // Function to send data to Zapier webhook (updated with test email)
+    // Function to send data to Zapier webhook (updated with hardcoded email)
     function sendToGoogleSheet(data) {
         const webhookURL = 'https://hooks.zapier.com/hooks/catch/21358037/2qmf1g4/'; // Your Zapier webhook URL
         fetch(webhookURL, {
             method: 'POST',
             body: JSON.stringify({
-                emailaddress: sessionStorage.getItem('emailAddress') || 'test@example.com', // Use test value
+                emailaddress: 'test@example.com', // Hardcoded to ensure it’s sent
                 electricbill: data.electricbill || sessionStorage.getItem('electricBill') || '380'
             }),
             headers: { 'Content-Type': 'application/json' },
