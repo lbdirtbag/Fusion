@@ -3,131 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Find Your Roof | Fusion</title>
-    <link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCFcB4m8ZvYHspksNkxNW0riR1IRissTQ&callback=initMap&libraries=places" async defer></script>
+    <title>Find Your Roof</title>
     <style>
-        html, body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 100dvh;
-            width: 100%;
-            padding: 0;
+        body {
+            font-family: Arial, sans-serif;
             margin: 0;
-            overflow-x: hidden;
-            overflow-y: auto;
-            font-family: 'Exo', sans-serif;
-            background-color: #ffffff;
-        }
-        .container {
-            width: 90%;
-            max-width: 500px;
-            background: white;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: auto;
-            overflow: visible !important;
+            text-align: center;
         }
-        h1 {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: #333;
-            margin-top: 5px;
-            margin-bottom: 10px;
+        #addressInput {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
         }
-        p {
-            font-size: 1rem;
-            color: #666;
-            margin-top: 5px;
-            line-height: 1.4;
-        }
-        #pac-container {
-            width: 100%;
-            max-width: 400px;
-            margin-bottom: 10px;
-        }
-        #pac-input {
-            width: 100%;
-            padding: 8px;
-            font-size: 1rem;
-            border: 1px solid #ccc;
+        #submitBtn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
             border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #submitBtn:hover {
+            background-color: #0056b3;
+        }
+        #errorMsg {
+            color: red;
+            display: none;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Find Your Roof</h1>
-        <p>Enter your address to find your roof and get started with your solar quote.</p>
-        <div id="pac-container">
-            <input id="pac-input" type="text" placeholder="Enter your address">
-        </div>
-    </div>
+    <h2>Enter Your Property Address</h2>
+    <input type="text" id="addressInput" placeholder="Enter your address (e.g., 123 Main St, City, State, ZIP)">
+    <button id="submitBtn">Submit</button>
+    <p id="errorMsg">Please enter a valid address.</p>
 
     <script>
-        let autocomplete;
+        // Store Tally fields in sessionStorage (assumed passed via Tally's URL or form)
+        const urlParams = new URLSearchParams(window.location.search);
+        sessionStorage.setItem('firstName', urlParams.get('firstName') || '');
+        sessionStorage.setItem('lastName', urlParams.get('lastName') || '');
+        sessionStorage.setItem('emailAddress', urlParams.get('emailAddress') || '');
+        sessionStorage.setItem('zipCode', urlParams.get('zipCode') || '');
 
-        function initMap() {
-            const input = document.getElementById("pac-input");
-            const options = {
-                types: ['address'],
-                componentRestrictions: { country: 'us' }
-            };
+        // Google Maps Geocoding API (replace 'YOUR_API_KEY' with your actual API key)
+        const apiKey = 'YOUR_API_KEY'; // Get this from Google Cloud Console
 
-            autocomplete = new google.maps.places.Autocomplete(input, options);
-
-            autocomplete.addListener("place_changed", () => {
-                const place = autocomplete.getPlace();
-                if (!place.geometry) {
-                    console.error("No details available for input: '" + place.name + "'");
-                    return;
-                }
-
-                let address = place.formatted_address;
-                sessionStorage.setItem("selectedAddress", address);
-                console.log("Address saved to sessionStorage: " + address + ", Value in sessionStorage: " + sessionStorage.getItem("selectedAddress"));
-
-                // Inject hidden input for Tally (for submission table, though we’re bypassing it now)
-                const addressInput = document.createElement("input");
-                addressInput.type = "hidden";
-                addressInput.name = "address";
-                addressInput.value = address;
-                document.body.appendChild(addressInput);
-                console.log("Hidden input added for address in Find Your Roof");
-
-                // Send to Google Sheet
-                sendToGoogleSheet({ address: address });
-            });
-        }
-
-        // Function to send data to Google Sheet
-        function sendToGoogleSheet(data) {
-            const scriptURL = 'https://script.google.com/macros/s/AKfycbyjXwTk7meBOF7U0MobH6bjKsBxwnJ3DAgRbYX0U8FnQ8_ZSMKJjnkPDqcjxwlGaD3X4A/exec';
-            fetch(scriptURL, {
-                method: 'POST',
-                body: JSON.stringify(data),
-                headers: { 'Content-Type': 'application/json' }
-            })
-            .then(response => response.json())
-            .then(result => console.log('Google Sheet response:', result))
-            .catch(error => console.error('Error sending to Google Sheet:', error));
-        }
-
-        window.onload = () => {
-            if (typeof google === "undefined") {
-                console.error("Google Maps API not loaded. Retrying in 1s...");
-                setTimeout(initMap, 1000);
-            } else {
-                initMap();
+        document.getElementById('submitBtn').addEventListener('click', async function() {
+            const addressInput = document.getElementById('addressInput').value.trim();
+            if (!addressInput) {
+                document.getElementById('errorMsg').style.display = 'block';
+                return;
             }
-        };
+
+            try {
+                const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addressInput)}&key=${apiKey}`);
+                const data = await response.json();
+
+                if (data.status === 'OK' && data.results.length > 0) {
+                    const formattedAddress = data.results[0].formatted_address;
+                    sessionStorage.setItem('address', formattedAddress); // Store in sessionStorage
+                    sendToGoogleSheet({ address: formattedAddress });
+                    window.location.href = 'https://forms.fusionpowerco.com/wM7NgY#next'; // Navigate to next Tally page
+                } else {
+                    document.getElementById('errorMsg').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Geocoding error:', error);
+                document.getElementById('errorMsg').style.display = 'block';
+            }
+        });
+
+        // Function to send data to Zapier webhook
+        function sendToGoogleSheet(data) {
+            const webhookURL = 'https://hooks.zapier.com/hooks/catch/...'; // Replace with your Zapier webhook URL
+            fetch(webhookURL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    emailaddress: sessionStorage.getItem('emailAddress') || '', // Link to Tally submission
+                    address: data.address || sessionStorage.getItem('address') || '' // From geocoding
+                }),
+                headers: { 'Content-Type': 'application/json' },
+                mode: 'no-cors' // Temporary workaround for CORS/CORB
+            })
+            .then(() => console.log('Zapier request sent (no-cors mode)'))
+            .catch(error => console.error('Error sending to Zapier (no-cors):', error));
+        }
     </script>
 </body>
 </html>
