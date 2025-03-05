@@ -1,27 +1,16 @@
-<!DOCTYPE html>
-<html>
-<body>
-    <form id="testForm">
-        <input type="text" name="address" value="Test Address">
-        <input type="text" name="electricBill" value="123">
-        <button type="submit">Submit Test</button>
-    </form>
-
-    <script>
-        document.getElementById('testForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            fetch('https://script.google.com/macros/s/AKfycbwqc_ua52mCBBpfMcv2I7DhpAEl8E36vGdAbNcjoOjkOpgeaVvxq-vfmnSdBuTrafOJdg/exec', {
-                method: 'POST',
-                body: JSON.stringify({
-                    address: this.querySelector('input[name="address"]').value,
-                    electricBill: this.querySelector('input[name="electricBill"]').value
-                }),
-                headers: { 'Content-Type': 'application/json' }
-            })
-            .then(response => response.json())
-            .then(result => console.log('Google Sheet response:', result))
-            .catch(error => console.error('Error:', error));
-        });
-    </script>
-</body>
-</html> 
+<script>
+    document.getElementById('testForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetch('https://script.google.com/macros/s/AKfycbwqc_ua52mCBBpfMcv2I7DhpAEl8E36vGdAbNcjoOjkOpgeaVvxq-vfmnSdBuTrafOJdg/exec', {
+            method: 'POST',
+            body: JSON.stringify({
+                address: this.querySelector('input[name="address"]').value,
+                electricBill: this.querySelector('input[name="electricBill"]').value
+            }),
+            headers: { 'Content-Type': 'application/json' },
+            mode: 'no-cors' // Temporary workaround for CORS
+        })
+        .then(() => console.log('Google Sheet request sent (no-cors mode)'))
+        .catch(error => console.error('Error sending to Google Sheet (no-cors):', error));
+    });
+</script>
