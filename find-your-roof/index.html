@@ -72,53 +72,59 @@
     </div>
 
     <script>
-    // Hardcode test values for storage (no Zapier dependency here)
-    console.log('Storing test data for later use');
+        // Store Tally fields in sessionStorage (real data from URL parameters)
+        const urlParams = new URLSearchParams(window.location.search);
+        sessionStorage.setItem('emailAddress', urlParams.get('emailAddress') || '');
+        sessionStorage.setItem('firstName', urlParams.get('firstName') || '');
+        sessionStorage.setItem('lastName', urlParams.get('lastName') || '');
+        sessionStorage.setItem('zipCode', urlParams.get('zipCode') || '');
+        sessionStorage.setItem('address', urlParams.get('address') || ''); // Optional, if Tally passes address
 
-    let autocomplete;
+        // Debug: Log the emailAddress to console
+        console.log('Stored emailAddress in sessionStorage:', sessionStorage.getItem('emailAddress'));
 
-    function initMap() {
-        const input = document.getElementById("pac-input");
-        const options = {
-            types: ['address'],
-            componentRestrictions: { country: 'us' }
-        };
+        let autocomplete;
 
-        autocomplete = new google.maps.places.Autocomplete(input, options);
+        function initMap() {
+            const input = document.getElementById("pac-input");
+            const options = {
+                types: ['address'],
+                componentRestrictions: { country: 'us' }
+            };
 
-        autocomplete.addListener("place_changed", () => {
-            const place = autocomplete.getPlace();
-            if (!place.geometry) {
-                console.error("No details available for input: '" + place.name + "'");
-                return;
-            }
+            autocomplete = new google.maps.places.Autocomplete(input, options);
 
-            let address = place.formatted_address;
-            sessionStorage.setItem("selectedAddress", address);
-            console.log("Address saved to sessionStorage: " + address + ", Value in sessionStorage: " + sessionStorage.getItem("selectedAddress"));
+            autocomplete.addListener("place_changed", () => {
+                const place = autocomplete.getPlace();
+                if (!place.geometry) {
+                    console.error("No details available for input: '" + place.name + "'");
+                    return;
+                }
 
-            // Inject hidden input for reference (won’t affect Tally due to restrictions)
-            const addressInput = document.createElement("input");
-            addressInput.type = "hidden";
-            addressInput.name = "address";
-            addressInput.value = address;
-            document.body.appendChild(addressInput);
-            console.log("Hidden input added for address in Find Your Roof");
+                let address = place.formatted_address;
+                sessionStorage.setItem("selectedAddress", address);
+                console.log("Address saved to sessionStorage: " + address + ", Value in sessionStorage: " + sessionStorage.getItem("selectedAddress"));
 
-            // No webhook call here—data will be sent from confirm-property
-        });
-    }
+                // Inject hidden input for reference (won’t affect Tally due to restrictions)
+                const addressInput = document.createElement("input");
+                addressInput.type = "hidden";
+                addressInput.name = "address";
+                addressInput.value = address;
+                document.body.appendChild(addressInput);
+                console.log("Hidden input added for address in Find Your Roof");
 
-    // No sendToGoogleSheet function needed here
-
-    window.onload = () => {
-        if (typeof google === "undefined") {
-            console.error("Google Maps API not loaded. Retrying in 1s...");
-            setTimeout(initMap, 1000);
-        } else {
-            initMap();
+                // No webhook call here—data will be sent from confirm-property
+            });
         }
-    };
-</script>
+
+        window.onload = () => {
+            if (typeof google === "undefined") {
+                console.error("Google Maps API not loaded. Retrying in 1s...");
+                setTimeout(initMap, 1000);
+            } else {
+                initMap();
+            }
+        };
+    </script>
 </body>
 </html>
