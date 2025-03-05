@@ -96,10 +96,10 @@
         console.log("Hidden input added for address in Confirm Your Property (initial)");
 
         // Send hardcoded data to Zapier (trigger once on load)
-        let hasSent = sessionStorage.getItem('addressSent') === 'true';
+        let hasSent = sessionStorage.getItem('dataSent') === 'true';
         if (!hasSent) {
-            sendToGoogleSheet({ address: address });
-            sessionStorage.setItem('addressSent', 'true'); // Prevent multiple sends
+            sendToGoogleSheet();
+            sessionStorage.setItem('dataSent', 'true'); // Prevent multiple sends
         }
 
         const geocoder = new google.maps.Geocoder();
@@ -139,10 +139,10 @@
                             }
                             console.log("Hidden input updated for address in Confirm Your Property");
                             // Send hardcoded data to Zapier (trigger once on drag)
-                            let hasSentDrag = sessionStorage.getItem('addressSentDrag') === 'true';
+                            let hasSentDrag = sessionStorage.getItem('dataSentDrag') === 'true';
                             if (!hasSentDrag) {
-                                sendToGoogleSheet({ address: newAddress });
-                                sessionStorage.setItem('addressSentDrag', 'true'); // Prevent multiple sends
+                                sendToGoogleSheet();
+                                sessionStorage.setItem('dataSentDrag', 'true'); // Prevent multiple sends
                             }
                         } else {
                             console.error("Geocode failed on drag: " + status);
@@ -156,15 +156,15 @@
         });
     }
 
-    // Function to send hardcoded data to Zapier webhook (updated to include Address)
-    function sendToGoogleSheet(data) {
+    // Function to send hardcoded data to Zapier webhook (updated to include all fields)
+    function sendToGoogleSheet() {
         const webhookURL = 'https://hooks.zapier.com/hooks/catch/21358037/2qmn180/'; // Your Zapier webhook URL
         fetch(webhookURL, {
             method: 'POST',
             body: JSON.stringify({
                 'Email Address': 'test@example.com', // Hardcoded to ensure lookup works
                 'Address': '3042 E El Moro Ave, Mesa, AZ 85204, USA', // Hardcoded test value, match Google Sheet column
-                'Electric Bill': '370' // Added to ensure consistency (optional, from index.html)
+                'Electric Bill': '370' // Hardcoded test value, match Google Sheet column
             }),
             headers: { 'Content-Type': 'application/json' },
             mode: 'no-cors' // Temporary workaround for CORS/CORB
