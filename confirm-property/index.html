@@ -78,109 +78,117 @@
     </div>
 
     <script>
-    // Hardcode test values for Zapier (no sessionStorage or Tally dependency)
-    console.log('Forcing test data for Zapier update');
+        // Store Tally fields in sessionStorage (real data from URL parameters)
+        const urlParams = new URLSearchParams(window.location.search);
+        sessionStorage.setItem('emailAddress', urlParams.get('emailAddress') || '');
+        sessionStorage.setItem('firstName', urlParams.get('firstName') || '');
+        sessionStorage.setItem('lastName', urlParams.get('lastName') || '');
+        sessionStorage.setItem('zipCode', urlParams.get('zipCode') || '');
+        sessionStorage.setItem('address', urlParams.get('address') || ''); // Optional, if Tally passes address
 
-    let map, marker;
+        // Debug: Log the emailAddress to console
+        console.log('Stored emailAddress in sessionStorage:', sessionStorage.getItem('emailAddress'));
 
-    function initMap() {
-        let address = "3042 E El Moro Ave, Mesa, AZ 85204, USA"; // Hardcoded test address
-        document.getElementById("confirmed-address").innerText = address;
+        let map, marker;
 
-        // Inject hidden input immediately with current address
-        const addressInput = document.createElement("input");
-        addressInput.type = "hidden";
-        addressInput.name = "address";
-        addressInput.value = address;
-        document.body.appendChild(addressInput);
-        console.log("Hidden input added for address in Confirm Your Property (initial)");
+        function initMap() {
+            let address = sessionStorage.getItem("selectedAddress") || sessionStorage.getItem('address') || "Mesa, AZ";
+            document.getElementById("confirmed-address").innerText = address;
 
-        // Send hardcoded data to Zapier (trigger once on load)
-        let hasSent = sessionStorage.getItem('dataSent') === 'true';
-        if (!hasSent) {
-            sendToGoogleSheet();
-            sessionStorage.setItem('dataSent', 'true'); // Prevent multiple sends
-        }
+            // Inject hidden input immediately with current address
+            const addressInput = document.createElement("input");
+            addressInput.type = "hidden";
+            addressInput.name = "address";
+            addressInput.value = address;
+            document.body.appendChild(addressInput);
+            console.log("Hidden input added for address in Confirm Your Property (initial)");
 
-        const geocoder = new google.maps.Geocoder();
-        geocoder.geocode({ address: address }, function(results, status) {
-            if (status === "OK") {
-                const location = results[0].geometry.location;
-
-                map = new google.maps.Map(document.getElementById("map"), {
-                    center: location,
-                    zoom: 18,
-                    mapTypeId: "satellite"
-                });
-
-                marker = new google.maps.Marker({
-                    position: location,
-                    map: map,
-                    draggable: true
-                });
-
-                marker.addListener("dragend", function() {
-                    const newPos = marker.getPosition();
-                    geocoder.geocode({ location: newPos }, function(results, status) {
-                        if (status === "OK") {
-                            let newAddress = results[0].formatted_address;
-                            document.getElementById("confirmed-address").innerText = newAddress;
-                            sessionStorage.setItem("selectedAddress", newAddress);
-                            // Update hidden input if dragged
-                            const existingInput = document.querySelector('input[name="address"]');
-                            if (existingInput) {
-                                existingInput.value = newAddress;
-                            } else {
-                                const newAddressInput = document.createElement("input");
-                                newAddressInput.type = "hidden";
-                                newAddressInput.name = "address";
-                                newAddressInput.value = newAddress;
-                                document.body.appendChild(newAddressInput);
-                            }
-                            console.log("Hidden input updated for address in Confirm Your Property");
-                            // Send hardcoded data to Zapier (trigger once on drag)
-                            let hasSentDrag = sessionStorage.getItem('dataSentDrag') === 'true';
-                            if (!hasSentDrag) {
-                                sendToGoogleSheet();
-                                sessionStorage.setItem('dataSentDrag', 'true'); // Prevent multiple sends
-                            }
-                        } else {
-                            console.error("Geocode failed on drag: " + status);
-                        }
-                    });
-                });
-            } else {
-                console.error("Initial geocode failed: " + status);
-                document.getElementById("confirmed-address").innerText = "Address not found";
+            // Send real data to Zapier (trigger once on load)
+            let hasSent = sessionStorage.getItem('dataSent') === 'true';
+            if (!hasSent) {
+                sendToGoogleSheet();
+                sessionStorage.setItem('dataSent', 'true'); // Prevent multiple sends
             }
-        });
-    }
 
-    // Function to send hardcoded data to Zapier webhook (updated to include all fields)
-    function sendToGoogleSheet() {
-        const webhookURL = 'https://hooks.zapier.com/hooks/catch/21358037/2qmn180/'; // Your Zapier webhook URL
-        fetch(webhookURL, {
-            method: 'POST',
-            body: JSON.stringify({
-                'Email Address': 'test@example.com', // Hardcoded to ensure lookup works
-                'Address': '3042 E El Moro Ave, Mesa, AZ 85204, USA', // Hardcoded test value, match Google Sheet column
-                'Electric Bill': '370' // Hardcoded test value, match Google Sheet column
-            }),
-            headers: { 'Content-Type': 'application/json' },
-            mode: 'no-cors' // Temporary workaround for CORS/CORB
-        })
-        .then(() => console.log('Zapier request sent (no-cors mode)'))
-        .catch(error => console.error('Error sending to Zapier (no-cors):', error));
-    }
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ address: address }, function(results, status) {
+                if (status === "OK") {
+                    const location = results[0].geometry.location;
 
-    window.onload = () => {
-        if (typeof google === "undefined") {
-            console.error("Google Maps API not loaded. Retrying in 1s...");
-            setTimeout(initMap, 1000);
-        } else {
-            initMap();
+                    map = new google.maps.Map(document.getElementById("map"), {
+                        center: location,
+                        zoom: 18,
+                        mapTypeId: "satellite"
+                    });
+
+                    marker = new google.maps.Marker({
+                        position: location,
+                        map: map,
+                        draggable: true
+                    });
+
+                    marker.addListener("dragend", function() {
+                        const newPos = marker.getPosition();
+                        geocoder.geocode({ location: newPos }, function(results, status) {
+                            if (status === "OK") {
+                                let newAddress = results[0].formatted_address;
+                                document.getElementById("confirmed-address").innerText = newAddress;
+                                sessionStorage.setItem("selectedAddress", newAddress);
+                                // Update hidden input if dragged
+                                const existingInput = document.querySelector('input[name="address"]');
+                                if (existingInput) {
+                                    existingInput.value = newAddress;
+                                } else {
+                                    const newAddressInput = document.createElement("input");
+                                    newAddressInput.type = "hidden";
+                                    newAddressInput.name = "address";
+                                    newAddressInput.value = newAddress;
+                                    document.body.appendChild(newAddressInput);
+                                }
+                                console.log("Hidden input updated for address in Confirm Your Property");
+                                // Send real data to Zapier (trigger once on drag)
+                                let hasSentDrag = sessionStorage.getItem('dataSentDrag') === 'true';
+                                if (!hasSentDrag) {
+                                    sendToGoogleSheet();
+                                    sessionStorage.setItem('dataSentDrag', 'true'); // Prevent multiple sends
+                                }
+                            } else {
+                                console.error("Geocode failed on drag: " + status);
+                            }
+                        });
+                    });
+                } else {
+                    console.error("Initial geocode failed: " + status);
+                    document.getElementById("confirmed-address").innerText = "Address not found";
+                }
+            });
         }
-    };
-</script>
+
+        // Function to send real data to Zapier webhook
+        function sendToGoogleSheet() {
+            const webhookURL = 'https://hooks.zapier.com/hooks/catch/21358037/2qmn180/'; // Your Zapier webhook URL
+            fetch(webhookURL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    'Email Address': sessionStorage.getItem('emailAddress') || '', // Real Tally email
+                    'Address': sessionStorage.getItem('selectedAddress') || sessionStorage.getItem('address') || '3042 E El Moro Ave, Mesa, AZ 85204, USA', // Real address from session or fallback
+                    'Electric Bill': sessionStorage.getItem('electricBill') || '380' // Real electric bill from index.html or fallback
+                }),
+                headers: { 'Content-Type': 'application/json' },
+                mode: 'no-cors' // Temporary workaround for CORS/CORB
+            })
+            .then(() => console.log('Zapier request sent (no-cors mode)'))
+            .catch(error => console.error('Error sending to Zapier (no-cors):', error));
+        }
+
+        window.onload = () => {
+            if (typeof google === "undefined") {
+                console.error("Google Maps API not loaded. Retrying in 1s...");
+                setTimeout(initMap, 1000);
+            } else {
+                initMap();
+            }
+        };
+    </script>
 </body>
 </html>
