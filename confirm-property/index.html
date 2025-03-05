@@ -3,44 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confirm Your Property</title>
+    <title>Confirm Your Property | Fusion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCFcB4m8ZvYHspksNkxNW0riR1IRissTQ&callback=initMap&libraries=places" async defer></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        html, body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100dvh;
+            width: 100%;
+            padding: 0;
             margin: 0;
+            overflow-x: hidden;
+            overflow-y: auto;
+            font-family: 'Exo', sans-serif;
+            background-color: #ffffff;
+        }
+        .container {
+            width: 90%;
+            max-width: 500px;
+            background: white;
             padding: 20px;
-            text-align: center;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            height: auto;
+            overflow: visible !important;
+            padding-bottom: 20px;
         }
-        #addressDisplay {
-            font-size: 18px;
-            margin: 20px 0;
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
             color: #333;
+            margin-top: 5px;
+            margin-bottom: 10px;
         }
-        #submitBtn {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
+        p {
+            font-size: 1rem;
+            color: #666;
+            margin-top: 5px;
+            line-height: 1.4;
         }
-        #submitBtn:hover {
-            background-color: #0056b3;
-        }
-        #errorMsg {
-            color: red;
-            display: none;
+        #map {
+            width: 100%;
+            height: 350px;
+            max-height: 40vh;
+            border-radius: 10px;
             margin-top: 10px;
+        }
+        .address-container {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            margin-top: 10px;
+            background: #f0f0f0;
+            padding: 8px;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    <h2>Confirm Your Property Address</h2>
-    <p>Is this your address?</p>
-    <p id="addressDisplay"></p>
-    <button id="submitBtn">Confirm</button>
-    <p id="errorMsg">No address found. Please go back and enter an address.</p>
+    <div class="container">
+        <h1>Confirm Your Property</h1>
+        <p>If the pin isn't already on your roof, click to place it. This helps us understand what kind of solar system will work best for you and improves the accuracy of your quotes.</p>
+        <div id="map"></div>
+        <div class="address-container" id="selected-address">
+            Address: <span id="confirmed-address">Loading...</span>
+        </div>
+    </div>
 
     <script>
         // Store Tally fields in sessionStorage (assumed passed via Tally's URL or form)
@@ -48,38 +83,87 @@
         sessionStorage.setItem('firstName', urlParams.get('firstName') || '');
         sessionStorage.setItem('lastName', urlParams.get('lastName') || '');
         sessionStorage.setItem('emailAddress', urlParams.get('emailAddress') || '');
-        sessionStorage.setItem('zipCode', urlParams.getItem('zipCode') || '');
+        sessionStorage.setItem('zipCode', urlParams.get('zipCode') || '');
 
-        // Display and confirm address
-        const address = sessionStorage.getItem('address');
-        const addressDisplay = document.getElementById('addressDisplay');
-        const errorMsg = document.getElementById('errorMsg');
+        let map, marker;
 
-        if (address) {
-            addressDisplay.textContent = address;
-            errorMsg.style.display = 'none';
-        } else {
-            addressDisplay.textContent = '';
-            errorMsg.style.display = 'block';
+        function initMap() {
+            let address = sessionStorage.getItem("selectedAddress") || "Mesa, AZ";
+            document.getElementById("confirmed-address").innerText = address;
+
+            // Inject hidden input immediately with current address
+            const addressInput = document.createElement("input");
+            addressInput.type = "hidden";
+            addressInput.name = "address";
+            addressInput.value = address;
+            document.body.appendChild(addressInput);
+            console.log("Hidden input added for address in Confirm Your Property (initial)");
+
+            // Send to Zapier webhook (new addition, preserving original Google Sheet call as a comment)
+            sendToGoogleSheet({ address: address });
+            /*
+            // Original Google Sheet call (commented out for Zapier integration)
+            sendToGoogleSheet({ address: address });
+            */
+
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ address: address }, function(results, status) {
+                if (status === "OK") {
+                    const location = results[0].geometry.location;
+
+                    map = new google.maps.Map(document.getElementById("map"), {
+                        center: location,
+                        zoom: 18,
+                        mapTypeId: "satellite"
+                    });
+
+                    marker = new google.maps.Marker({
+                        position: location,
+                        map: map,
+                        draggable: true
+                    });
+
+                    marker.addListener("dragend", function() {
+                        const newPos = marker.getPosition();
+                        geocoder.geocode({ location: newPos }, function(results, status) {
+                            if (status === "OK") {
+                                let newAddress = results[0].formatted_address;
+                                document.getElementById("confirmed-address").innerText = newAddress;
+                                sessionStorage.setItem("selectedAddress", newAddress);
+                                // Update hidden input if dragged
+                                const existingInput = document.querySelector('input[name="address"]');
+                                if (existingInput) {
+                                    existingInput.value = newAddress;
+                                } else {
+                                    const newAddressInput = document.createElement("input");
+                                    newAddressInput.type = "hidden";
+                                    newAddressInput.name = "address";
+                                    newAddressInput.value = newAddress;
+                                    document.body.appendChild(newAddressInput);
+                                }
+                                console.log("Hidden input updated for address in Confirm Your Property");
+                                // Send updated address to Zapier webhook
+                                sendToGoogleSheet({ address: newAddress });
+                            } else {
+                                console.error("Geocode failed on drag: " + status);
+                            }
+                        });
+                    });
+                } else {
+                    console.error("Initial geocode failed: " + status);
+                    document.getElementById("confirmed-address").innerText = "Address not found";
+                }
+            });
         }
 
-        document.getElementById('submitBtn').addEventListener('click', function() {
-            if (!address) {
-                errorMsg.style.display = 'block';
-                return;
-            }
-            sendToGoogleSheet({ address: address });
-            window.location.href = 'https://forms.fusionpowerco.com/wM7NgY#next'; // Navigate to next Tally page
-        });
-
-        // Function to send data to Zapier webhook
+        // Function to send data to Zapier webhook (new addition, replacing Google Sheet call)
         function sendToGoogleSheet(data) {
             const webhookURL = 'https://hooks.zapier.com/hooks/catch/...'; // Replace with your Zapier webhook URL
             fetch(webhookURL, {
                 method: 'POST',
                 body: JSON.stringify({
                     emailaddress: sessionStorage.getItem('emailAddress') || '', // Link to Tally submission
-                    address: data.address || sessionStorage.getItem('address') || '' // From sessionStorage
+                    address: data.address || sessionStorage.getItem('selectedAddress') || '' // From sessionStorage or drag
                 }),
                 headers: { 'Content-Type': 'application/json' },
                 mode: 'no-cors' // Temporary workaround for CORS/CORB
@@ -87,6 +171,15 @@
             .then(() => console.log('Zapier request sent (no-cors mode)'))
             .catch(error => console.error('Error sending to Zapier (no-cors):', error));
         }
+
+        window.onload = () => {
+            if (typeof google === "undefined") {
+                console.error("Google Maps API not loaded. Retrying in 1s...");
+                setTimeout(initMap, 1000);
+            } else {
+                initMap();
+            }
+        };
     </script>
 </body>
 </html>
