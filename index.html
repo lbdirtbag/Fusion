@@ -80,6 +80,9 @@
     sessionStorage.setItem('lastName', '');
     sessionStorage.setItem('zipCode', '');
 
+    // Debug: Log the emailAddress to console
+    console.log('Stored emailAddress in sessionStorage:', sessionStorage.getItem('emailAddress'));
+
     // Slider functionality (your original logic, unchanged)
     const slider = document.getElementById("priceSlider");
     const output = document.getElementById("sliderValue");
