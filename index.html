@@ -1,13 +1,82 @@
-<script>
-    // Store Tally fields in sessionStorage (real data from URL parameters, no fallback unless critical)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Electric Bill | Fusion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Exo', sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+        .slider-container {
+            width: 80%;
+            max-width: 500px;
+            margin: 10px auto;
+            background: white;
+            padding: 5px;
+            border-radius: 10px;
+        }
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            background: #ddd;
+            outline: none;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 28px;
+            height: 28px;
+            background: #00e2b5;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 0 8px rgba(0, 226, 181, 0.5);
+            transition: transform 0.2s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 28px;
+            height: 28px;
+            background: #00e2b5;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 0 8px rgba(0, 226, 181, 0.5);
+            transition: transform 0.2s;
+        }
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.2);
+        }
+        .slider-value {
+            margin-top: 15px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #333;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="slider-container">
+        <input type="range" id="priceSlider" min="50" max="1200" step="10" value="380">
+        <p class="slider-value">$<span id="sliderValue">380</span></p>
+    </div>
+
+    <script>
+    // Store Tally fields in sessionStorage (real data from URL parameters, with fallback)
     const urlParams = new URLSearchParams(window.location.search);
-    const emailAddress = urlParams.get('emailAddress'); // Get real email, no fallback unless critical
-    if (!emailAddress) {
-        console.error('Critical error: No emailAddress found in URL parameters. Please ensure Tally passes ?emailAddress=...');
-        sessionStorage.setItem('emailAddress', 'test@example.com'); // Critical fallback only if Tally fails
-    } else {
-        sessionStorage.setItem('emailAddress', emailAddress); // Use real email
-    }
+    sessionStorage.setItem('emailAddress', urlParams.get('emailAddress') || 'test@example.com'); // Fallback to test email if missing
     sessionStorage.setItem('firstName', urlParams.get('firstName') || '');
     sessionStorage.setItem('lastName', urlParams.get('lastName') || '');
     sessionStorage.setItem('zipCode', urlParams.get('zipCode') || '');
@@ -56,19 +125,18 @@
     };
 
     // Store final electricBill for later use (no Zapier send here)
-    let hasSent = sessionStorage.getItem('electricBillSent') !== 'true'; // Use sessionStorage for persistence
+    let hasSent = false; // Prevent multiple stores
     slider.addEventListener('change', function() {
-        if (hasSent) {
-            console.log('Electric bill already sent, skipping store');
-            return;
+        if (!hasSent) {
+            const electricBill = sessionStorage.getItem('electricBill') || '380';
+            sessionStorage.setItem('electricBillFinal', electricBill); // Store final value for confirm-property
+            console.log('Stored final electricBill in sessionStorage:', electricBill);
+            hasSent = true; // Ensure this only runs once per session
+            console.log('Electric bill data prepared for later Zapier send, waiting for Tally to proceed');
         }
-        const electricBill = sessionStorage.getItem('electricBill') || '380';
-        sessionStorage.setItem('electricBillFinal', electricBill); // Store final value for confirm-property
-        console.log('Stored final electricBill in sessionStorage:', electricBill);
-        hasSent = true; // Ensure this only runs once per session
-        sessionStorage.setItem('electricBillSent', 'true'); // Persist to prevent duplicates across sessions
-        console.log('Electric bill data prepared for later Zapier send, waiting for Tally to proceed');
     });
 
     // No direct Zapier send here—data will be sent from confirm-property
 </script>
+</body>
+</html>
