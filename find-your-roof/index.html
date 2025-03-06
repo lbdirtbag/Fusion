@@ -72,59 +72,65 @@
     </div>
 
     <script>
-        // Store Tally fields in sessionStorage (real data from URL parameters)
-        const urlParams = new URLSearchParams(window.location.search);
-        sessionStorage.setItem('emailAddress', urlParams.get('emailAddress') || '');
-        sessionStorage.setItem('firstName', urlParams.get('firstName') || '');
-        sessionStorage.setItem('lastName', urlParams.get('lastName') || '');
-        sessionStorage.setItem('zipCode', urlParams.get('zipCode') || '');
-        sessionStorage.setItem('address', urlParams.get('address') || ''); // Optional, if Tally passes address
+    // Store Tally fields in sessionStorage (real data from URL parameters, no fallback unless critical)
+    const urlParams = new URLSearchParams(window.location.search);
+    const emailAddress = urlParams.get('emailAddress'); // Get real email, no fallback unless critical
+    if (!emailAddress) {
+        console.error('Critical error: No emailAddress found in URL parameters. Please ensure Tally passes ?emailAddress=...');
+        sessionStorage.setItem('emailAddress', 'test@example.com'); // Critical fallback only if Tally fails
+    } else {
+        sessionStorage.setItem('emailAddress', emailAddress); // Use real email
+    }
+    sessionStorage.setItem('firstName', urlParams.get('firstName') || '');
+    sessionStorage.setItem('lastName', urlParams.get('lastName') || '');
+    sessionStorage.setItem('zipCode', urlParams.get('zipCode') || '');
+    sessionStorage.setItem('address', urlParams.get('address') || ''); // Optional, if Tally passes address
 
-        // Debug: Log the emailAddress to console
-        console.log('Stored emailAddress in sessionStorage:', sessionStorage.getItem('emailAddress'));
+    // Debug: Log the emailAddress to console
+    console.log('Stored emailAddress in sessionStorage:', sessionStorage.getItem('emailAddress'));
 
-        let autocomplete;
+    let autocomplete;
 
-        function initMap() {
-            const input = document.getElementById("pac-input");
-            const options = {
-                types: ['address'],
-                componentRestrictions: { country: 'us' }
-            };
-
-            autocomplete = new google.maps.places.Autocomplete(input, options);
-
-            autocomplete.addListener("place_changed", () => {
-                const place = autocomplete.getPlace();
-                if (!place.geometry) {
-                    console.error("No details available for input: '" + place.name + "'");
-                    return;
-                }
-
-                let address = place.formatted_address;
-                sessionStorage.setItem("selectedAddress", address);
-                console.log("Address saved to sessionStorage: " + address + ", Value in sessionStorage: " + sessionStorage.getItem("selectedAddress"));
-
-                // Inject hidden input for reference (won’t affect Tally due to restrictions)
-                const addressInput = document.createElement("input");
-                addressInput.type = "hidden";
-                addressInput.name = "address";
-                addressInput.value = address;
-                document.body.appendChild(addressInput);
-                console.log("Hidden input added for address in Find Your Roof");
-
-                // No webhook call here—data will be sent from confirm-property
-            });
-        }
-
-        window.onload = () => {
-            if (typeof google === "undefined") {
-                console.error("Google Maps API not loaded. Retrying in 1s...");
-                setTimeout(initMap, 1000);
-            } else {
-                initMap();
-            }
+    function initMap() {
+        const input = document.getElementById("pac-input");
+        const options = {
+            types: ['address'],
+            componentRestrictions: { country: 'us' }
         };
-    </script>
+
+        autocomplete = new google.maps.places.Autocomplete(input, options);
+
+        autocomplete.addListener("place_changed", () => {
+            const place = autocomplete.getPlace();
+            if (!place.geometry) {
+                console.error("No details available for input: '" + place.name + "'");
+                return;
+            }
+
+            let address = place.formatted_address;
+            sessionStorage.setItem("selectedAddress", address);
+            console.log("Address saved to sessionStorage: " + address + ", Value in sessionStorage: " + sessionStorage.getItem("selectedAddress"));
+
+            // Inject hidden input for reference (won’t affect Tally due to restrictions)
+            const addressInput = document.createElement("input");
+            addressInput.type = "hidden";
+            addressInput.name = "address";
+            addressInput.value = address;
+            document.body.appendChild(addressInput);
+            console.log("Hidden input added for address in Find Your Roof");
+
+            // No webhook call here—data will be sent from confirm-property
+        });
+    }
+
+    window.onload = () => {
+        if (typeof google === "undefined") {
+            console.error("Google Maps API not loaded. Retrying in 1s...");
+            setTimeout(initMap, 1000);
+        } else {
+            initMap();
+        }
+    };
+</script>
 </body>
 </html>
