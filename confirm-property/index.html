@@ -78,9 +78,15 @@
     </div>
 
     <script>
-    // Store Tally fields in sessionStorage (real data from URL parameters, with fallback)
+    // Store Tally fields in sessionStorage (real data from URL parameters, no fallback unless critical)
     const urlParams = new URLSearchParams(window.location.search);
-    sessionStorage.setItem('emailAddress', urlParams.get('emailAddress') || 'test@example.com'); // Fallback to test email if missing
+    const emailAddress = urlParams.get('emailAddress'); // Get real email, no fallback unless critical
+    if (!emailAddress) {
+        console.error('Critical error: No emailAddress found in URL parameters. Please ensure Tally passes ?emailAddress=...');
+        sessionStorage.setItem('emailAddress', 'test@example.com'); // Critical fallback only if Tally fails
+    } else {
+        sessionStorage.setItem('emailAddress', emailAddress); // Use real email
+    }
     sessionStorage.setItem('firstName', urlParams.get('firstName') || '');
     sessionStorage.setItem('lastName', urlParams.get('lastName') || '');
     sessionStorage.setItem('zipCode', urlParams.get('zipCode') || '');
@@ -103,9 +109,9 @@
         document.body.appendChild(addressInput);
         console.log("Hidden input added for address in Confirm Your Property (initial)");
 
-        // Send real data to Zapier (trigger once on load, ensure Address is sent)
+        // Send real data to Zapier (trigger once on load, ensure real email is used)
         let hasSent = sessionStorage.getItem('dataSent') === 'true';
-        if (!hasSent && (sessionStorage.getItem('emailAddress') && sessionStorage.getItem('selectedAddress'))) {
+        if (!hasSent && sessionStorage.getItem('emailAddress') && (sessionStorage.getItem('selectedAddress') || sessionStorage.getItem('address'))) {
             sendToGoogleSheet();
             sessionStorage.setItem('dataSent', 'true'); // Prevent multiple sends
         }
@@ -146,9 +152,9 @@
                                 document.body.appendChild(newAddressInput);
                             }
                             console.log("Hidden input updated for address in Confirm Your Property");
-                            // Send real data to Zapier (trigger once on drag, ensure Address is sent)
+                            // Send real data to Zapier (trigger once on drag, ensure real email is used)
                             let hasSentDrag = sessionStorage.getItem('dataSentDrag') === 'true';
-                            if (!hasSentDrag && (sessionStorage.getItem('emailAddress') && newAddress)) {
+                            if (!hasSentDrag && sessionStorage.getItem('emailAddress') && newAddress) {
                                 sendToGoogleSheet();
                                 sessionStorage.setItem('dataSentDrag', 'true'); // Prevent multiple sends
                             }
@@ -164,9 +170,14 @@
         });
     }
 
-    // Function to send real data to Zapier webhook (updated for correct field names and debugging)
+    // Function to send real data to Zapier webhook (updated for real email and debugging)
     function sendToGoogleSheet() {
-        const email = sessionStorage.getItem('emailAddress') || 'test@example.com';
+        const email = sessionStorage.getItem('emailAddress');
+        if (!email) {
+            console.error('Critical error: No emailAddress found, cannot send to Zapier. Using fallback test@example.com temporarily.');
+            sessionStorage.setItem('emailAddress', 'test@example.com'); // Critical fallback only if Tally fails
+        }
+
         const address = sessionStorage.getItem('selectedAddress') || sessionStorage.getItem('address') || '3042 E El Moro Ave, Mesa, AZ 85204, USA';
         const electricBill = sessionStorage.getItem('electricBillFinal') || sessionStorage.getItem('electricBill') || '380';
 
@@ -174,7 +185,7 @@
         fetch(webhookURL, {
             method: 'POST',
             body: JSON.stringify({
-                'Email Address': email, // Real Tally email or fallback
+                'Email Address': sessionStorage.getItem('emailAddress'), // Real Tally email or critical fallback
                 'Address': address, // Real address from session or fallback
                 'Electric Bill': electricBill // Real electric bill from index.html or fallback
             }),
@@ -182,7 +193,7 @@
             mode: 'no-cors' // Temporary workaround for CORS/CORB
         })
         .then(() => console.log('Zapier request sent (no-cors mode) with payload:', JSON.stringify({
-            'Email Address': email,
+            'Email Address': sessionStorage.getItem('emailAddress'),
             'Address': address,
             'Electric Bill': electricBill
         })))
