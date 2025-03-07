@@ -74,17 +74,6 @@
     </div>
 
     <script>
-    // Get Tally URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const emailAddress = urlParams.get('emailAddress'); // Expecting ?emailAddress=john@example.com
-    if (emailAddress) {
-        sessionStorage.setItem('emailAddress', emailAddress);
-        console.log('Stored emailAddress from Tally:', emailAddress);
-    } else {
-        console.error('No emailAddress from Tally. Check Tally embed settings.');
-    }
-
-    // Slider logic
     const slider = document.getElementById("priceSlider");
     const output = document.getElementById("sliderValue");
     const savedBill = sessionStorage.getItem('electricBill');
@@ -100,12 +89,25 @@
         output.textContent = this.value;
         sessionStorage.setItem('electricBill', this.value);
         console.log('Electric Bill updated:', this.value);
+        const electricBillField = document.querySelector('input[name="electricBill"]');
+        if (electricBillField) {
+            electricBillField.value = this.value;
+            console.log('Set electricBill hidden field to:', this.value);
+        } else {
+            console.error('electricBill hidden field not found in Tally form.');
+        }
     };
 
-    // Store final value on change (no webhook here)
     slider.addEventListener('change', function() {
         sessionStorage.setItem('electricBill', this.value);
         console.log('Final Electric Bill stored:', this.value);
+        const electricBillField = document.querySelector('input[name="electricBill"]');
+        if (electricBillField) {
+            electricBillField.value = this.value;
+            console.log('Set electricBill hidden field to:', this.value);
+        } else {
+            console.error('electricBill hidden field not found in Tally form.');
+        }
     });
 </script>
 </body>
