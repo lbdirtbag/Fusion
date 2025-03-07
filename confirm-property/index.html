@@ -101,29 +101,32 @@
                             sessionStorage.setItem('address', newAddress);
                             document.getElementById("confirmed-address").innerText = newAddress;
                             console.log('Updated address after drag:', newAddress);
-                            const addressField = document.querySelector('input[name="address"]');
-                            if (addressField) {
-                                addressField.value = newAddress;
-                                console.log('Set address hidden field to:', newAddress);
-                            } else {
-                                console.error('address hidden field not found in Tally form.');
-                            }
+                            setAddressHiddenField();
                         }
                     });
                 });
 
-                // Set initial address
-                const addressField = document.querySelector('input[name="address"]');
-                if (addressField) {
-                    addressField.value = address;
-                    console.log('Set address hidden field to:', address);
-                } else {
-                    console.error('address hidden field not found in Tally form.');
-                }
+                setAddressHiddenField(); // Initial address
             } else {
                 console.error("Geocode failed:", status);
             }
         });
+    }
+
+    function setAddressHiddenField() {
+        const addressField = document.querySelector('input[name="address"]');
+        if (addressField) {
+            addressField.value = sessionStorage.getItem('address') || 'Mesa, AZ';
+            console.log('Set address hidden field to:', addressField.value);
+        } else {
+            console.error('address hidden field not found in Tally form. DOM contents:', document.body.innerHTML.substring(0, 200));
+            setTimeout(setAddressHiddenField, 500);
+            if (!window.retryCount) window.retryCount = 0;
+            if (window.retryCount++ > 10) {
+                console.error('Max retries reached for address hidden field.');
+                clearTimeout();
+            }
+        }
     }
 
     window.onload = () => {
