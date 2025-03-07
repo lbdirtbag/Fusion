@@ -78,131 +78,83 @@
     </div>
 
     <script>
-    // Store Tally fields in sessionStorage (real data from URL parameters, no fallback unless critical)
+    // Get Tally URL parameters
     const urlParams = new URLSearchParams(window.location.search);
-    const emailAddress = urlParams.get('emailAddress'); // Get real email, no fallback unless critical
-    if (!emailAddress) {
-        console.error('Critical error: No emailAddress found in URL parameters. Please ensure Tally passes ?emailAddress=...');
-        sessionStorage.setItem('emailAddress', 'test@example.com'); // Critical fallback only if Tally fails
+    const emailAddress = urlParams.get('emailAddress');
+    if (emailAddress) {
+        sessionStorage.setItem('emailAddress', emailAddress);
+        console.log('Stored emailAddress from Tally:', emailAddress);
     } else {
-        sessionStorage.setItem('emailAddress', emailAddress); // Use real email
+        console.error('No emailAddress from Tally. Check Tally embed settings.');
     }
-    sessionStorage.setItem('firstName', urlParams.get('firstName') || '');
-    sessionStorage.setItem('lastName', urlParams.get('lastName') || '');
-    sessionStorage.setItem('zipCode', urlParams.get('zipCode') || '');
-    sessionStorage.setItem('address', urlParams.get('address') || ''); // Optional, if Tally passes address
-
-    // Debug: Log the emailAddress to console
-    console.log('Stored emailAddress in sessionStorage:', sessionStorage.getItem('emailAddress'));
 
     let map, marker;
-
     function initMap() {
-        let address = sessionStorage.getItem("selectedAddress") || sessionStorage.getItem('address') || "Mesa, AZ";
+        const address = sessionStorage.getItem('address') || 'Mesa, AZ';
         document.getElementById("confirmed-address").innerText = address;
 
-        // Inject hidden input immediately with current address
-        const addressInput = document.createElement("input");
-        addressInput.type = "hidden";
-        addressInput.name = "address";
-        addressInput.value = address;
-        document.body.appendChild(addressInput);
-        console.log("Hidden input added for address in Confirm Your Property (initial)");
-
-        // Send real data to Zapier (trigger once on load, ensure real email is used)
-        let hasSent = sessionStorage.getItem('dataSent') === 'true';
-        if (!hasSent && sessionStorage.getItem('emailAddress') && (sessionStorage.getItem('selectedAddress') || sessionStorage.getItem('address'))) {
-            sendToGoogleSheet();
-            sessionStorage.setItem('dataSent', 'true'); // Prevent multiple sends
-        }
-
         const geocoder = new google.maps.Geocoder();
-        geocoder.geocode({ address: address }, function(results, status) {
+        geocoder.geocode({ address: address }, (results, status) => {
             if (status === "OK") {
                 const location = results[0].geometry.location;
-
                 map = new google.maps.Map(document.getElementById("map"), {
                     center: location,
                     zoom: 18,
                     mapTypeId: "satellite"
                 });
+                marker = new google.maps.Marker({ position: location, map: map, draggable: true });
 
-                marker = new google.maps.Marker({
-                    position: location,
-                    map: map,
-                    draggable: true
-                });
-
-                marker.addListener("dragend", function() {
-                    const newPos = marker.getPosition();
-                    geocoder.geocode({ location: newPos }, function(results, status) {
+                marker.addListener("dragend", () => {
+                    geocoder.geocode({ location: marker.getPosition() }, (results, status) => {
                         if (status === "OK") {
-                            let newAddress = results[0].formatted_address;
+                            const newAddress = results[0].formatted_address;
+                            sessionStorage.setItem('address', newAddress);
                             document.getElementById("confirmed-address").innerText = newAddress;
-                            sessionStorage.setItem("selectedAddress", newAddress);
-                            // Update hidden input if dragged
-                            const existingInput = document.querySelector('input[name="address"]');
-                            if (existingInput) {
-                                existingInput.value = newAddress;
-                            } else {
-                                const newAddressInput = document.createElement("input");
-                                newAddressInput.type = "hidden";
-                                newAddressInput.name = "address";
-                                newAddressInput.value = newAddress;
-                                document.body.appendChild(newAddressInput);
-                            }
-                            console.log("Hidden input updated for address in Confirm Your Property");
-                            // Send real data to Zapier (trigger once on drag, ensure real email is used)
-                            let hasSentDrag = sessionStorage.getItem('dataSentDrag') === 'true';
-                            if (!hasSentDrag && sessionStorage.getItem('emailAddress') && newAddress) {
-                                sendToGoogleSheet();
-                                sessionStorage.setItem('dataSentDrag', 'true'); // Prevent multiple sends
-                            }
-                        } else {
-                            console.error("Geocode failed on drag: " + status);
+                            console.log('Updated address after drag:', newAddress);
+                            sendToZapier(); // Send on drag
                         }
                     });
                 });
+
+                // Send initial data to Zapier if all fields are present
+                if (!sessionStorage.getItem('dataSent') && sessionStorage.getItem('emailAddress')) {
+                    sendToZapier();
+                    sessionStorage.setItem('dataSent', 'true');
+                }
             } else {
-                console.error("Initial geocode failed: " + status);
-                document.getElementById("confirmed-address").innerText = "Address not found";
+                console.error("Geocode failed:", status);
             }
         });
     }
 
-    // Function to send real data to Zapier webhook (updated for real email and debugging)
-    function sendToGoogleSheet() {
+    function sendToZapier() {
         const email = sessionStorage.getItem('emailAddress');
+        const address = sessionStorage.getItem('address');
+        const electricBill = sessionStorage.getItem('electricBill') || '380';
+
         if (!email) {
-            console.error('Critical error: No emailAddress found, cannot send to Zapier. Using fallback test@example.com temporarily.');
-            sessionStorage.setItem('emailAddress', 'test@example.com'); // Critical fallback only if Tally fails
+            console.error('No emailAddress. Webhook skipped.');
+            return;
         }
 
-        const address = sessionStorage.getItem('selectedAddress') || sessionStorage.getItem('address') || '3042 E El Moro Ave, Mesa, AZ 85204, USA';
-        const electricBill = sessionStorage.getItem('electricBillFinal') || sessionStorage.getItem('electricBill') || '380';
-
+        const payload = {
+            'Email Address': email,
+            'Address': address,
+            'Electric Bill': electricBill
+        };
         const webhookURL = 'https://hooks.zapier.com/hooks/catch/21358037/2qmn180/'; // Your Zapier webhook URL
         fetch(webhookURL, {
             method: 'POST',
-            body: JSON.stringify({
-                'Email Address': sessionStorage.getItem('emailAddress'), // Real Tally email or critical fallback
-                'Address': address, // Real address from session or fallback
-                'Electric Bill': electricBill // Real electric bill from index.html or fallback
-            }),
-            headers: { 'Content-Type': 'application/json' },
-            mode: 'no-cors' // Temporary workaround for CORS/CORB
+            body: JSON.stringify(payload),
+            headers: { 'Content-Type': 'application/json' }
         })
-        .then(() => console.log('Zapier request sent (no-cors mode) with payload:', JSON.stringify({
-            'Email Address': sessionStorage.getItem('emailAddress'),
-            'Address': address,
-            'Electric Bill': electricBill
-        })))
-        .catch(error => console.error('Error sending to Zapier (no-cors):', error));
+        .then(() => console.log('Webhook sent:', payload))
+        .catch(error => console.error('Webhook error:', error));
     }
 
     window.onload = () => {
         if (typeof google === "undefined") {
-            console.error("Google Maps API not loaded. Retrying in 1s...");
+            console.error("Google Maps API not loaded. Retrying...");
             setTimeout(initMap, 1000);
         } else {
             initMap();
