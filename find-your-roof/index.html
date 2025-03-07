@@ -72,16 +72,6 @@
     </div>
 
     <script>
-    // Get Tally URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const emailAddress = urlParams.get('emailAddress');
-    if (emailAddress) {
-        sessionStorage.setItem('emailAddress', emailAddress);
-        console.log('Stored emailAddress from Tally:', emailAddress);
-    } else {
-        console.error('No emailAddress from Tally. Check Tally embed settings.');
-    }
-
     let autocomplete;
     function initMap() {
         const input = document.getElementById("pac-input");
@@ -97,6 +87,13 @@
             const address = place.formatted_address;
             sessionStorage.setItem('address', address);
             console.log('Address stored:', address);
+            const addressField = document.querySelector('input[name="address"]');
+            if (addressField) {
+                addressField.value = address;
+                console.log('Set address hidden field to:', address);
+            } else {
+                console.error('address hidden field not found in Tally form.');
+            }
         });
     }
 
