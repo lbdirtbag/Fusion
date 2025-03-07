@@ -87,24 +87,9 @@
             const address = place.formatted_address;
             sessionStorage.setItem('address', address);
             console.log('Address stored:', address);
-            setAddressHiddenField();
+            window.parent.postMessage({ address: address }, '*');
+            console.log('Sent address to parent via postMessage:', address);
         });
-    }
-
-    function setAddressHiddenField() {
-        const addressField = document.querySelector('input[name="address"]');
-        if (addressField) {
-            addressField.value = sessionStorage.getItem('address') || '';
-            console.log('Set address hidden field to:', addressField.value);
-        } else {
-            console.error('address hidden field not found in Tally form. DOM contents:', document.body.innerHTML.substring(0, 200));
-            setTimeout(setAddressHiddenField, 500);
-            if (!window.retryCount) window.retryCount = 0;
-            if (window.retryCount++ > 10) {
-                console.error('Max retries reached for address hidden field.');
-                clearTimeout();
-            }
-        }
     }
 
     window.onload = () => {
@@ -113,7 +98,6 @@
             setTimeout(initMap, 1000);
         } else {
             initMap();
-            setAddressHiddenField(); // Initial check
         }
     };
 </script>
