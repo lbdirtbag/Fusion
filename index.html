@@ -85,30 +85,32 @@
         sessionStorage.setItem('electricBill', slider.value);
     }
 
+    function setHiddenField() {
+        const electricBillField = document.querySelector('input[name="electricBill"]');
+        if (electricBillField) {
+            electricBillField.value = sessionStorage.getItem('electricBill') || slider.value;
+            console.log('Set electricBill hidden field to:', electricBillField.value);
+        } else {
+            console.error('electricBill hidden field not found in Tally form. Retrying...');
+            setTimeout(setHiddenField, 500); // Retry after 500ms
+        }
+    }
+
     slider.oninput = function() {
         output.textContent = this.value;
         sessionStorage.setItem('electricBill', this.value);
         console.log('Electric Bill updated:', this.value);
-        const electricBillField = document.querySelector('input[name="electricBill"]');
-        if (electricBillField) {
-            electricBillField.value = this.value;
-            console.log('Set electricBill hidden field to:', this.value);
-        } else {
-            console.error('electricBill hidden field not found in Tally form.');
-        }
+        setHiddenField();
     };
 
     slider.addEventListener('change', function() {
         sessionStorage.setItem('electricBill', this.value);
         console.log('Final Electric Bill stored:', this.value);
-        const electricBillField = document.querySelector('input[name="electricBill"]');
-        if (electricBillField) {
-            electricBillField.value = this.value;
-            console.log('Set electricBill hidden field to:', this.value);
-        } else {
-            console.error('electricBill hidden field not found in Tally form.');
-        }
+        setHiddenField();
     });
+
+    // Initial check
+    setHiddenField();
 </script>
 </body>
 </html>
