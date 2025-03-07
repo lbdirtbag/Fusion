@@ -85,37 +85,27 @@
         sessionStorage.setItem('electricBill', slider.value);
     }
 
-    function setHiddenField() {
-        const electricBillField = document.querySelector('input[name="electricBill"]');
-        if (electricBillField) {
-            electricBillField.value = sessionStorage.getItem('electricBill') || slider.value;
-            console.log('Set electricBill hidden field to:', electricBillField.value);
-        } else {
-            console.error('electricBill hidden field not found in Tally form. DOM contents:', document.body.innerHTML.substring(0, 200));
-            setTimeout(setHiddenField, 500); // Retry after 500ms, but limit retries
-            if (!window.retryCount) window.retryCount = 0;
-            if (window.retryCount++ > 10) {
-                console.error('Max retries reached for electricBill hidden field.');
-                clearTimeout();
-            }
-        }
+    function sendElectricBillToParent() {
+        const electricBill = sessionStorage.getItem('electricBill') || slider.value;
+        window.parent.postMessage({ electricBill: electricBill }, '*');
+        console.log('Sent electricBill to parent via postMessage:', electricBill);
     }
 
     slider.oninput = function() {
         output.textContent = this.value;
         sessionStorage.setItem('electricBill', this.value);
         console.log('Electric Bill updated:', this.value);
-        setHiddenField();
+        sendElectricBillToParent();
     };
 
     slider.addEventListener('change', function() {
         sessionStorage.setItem('electricBill', this.value);
         console.log('Final Electric Bill stored:', this.value);
-        setHiddenField();
+        sendElectricBillToParent();
     });
 
-    // Initial check
-    setHiddenField();
+    // Initial send
+    sendElectricBillToParent();
 </script>
 </body>
 </html>
