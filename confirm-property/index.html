@@ -78,16 +78,6 @@
     </div>
 
     <script>
-    // Get Tally URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const emailAddress = urlParams.get('emailAddress');
-    if (emailAddress) {
-        sessionStorage.setItem('emailAddress', emailAddress);
-        console.log('Stored emailAddress from Tally:', emailAddress);
-    } else {
-        console.error('No emailAddress from Tally. Check Tally embed settings.');
-    }
-
     let map, marker;
     function initMap() {
         const address = sessionStorage.getItem('address') || 'Mesa, AZ';
@@ -111,45 +101,29 @@
                             sessionStorage.setItem('address', newAddress);
                             document.getElementById("confirmed-address").innerText = newAddress;
                             console.log('Updated address after drag:', newAddress);
-                            sendToZapier(); // Send on drag
+                            const addressField = document.querySelector('input[name="address"]');
+                            if (addressField) {
+                                addressField.value = newAddress;
+                                console.log('Set address hidden field to:', newAddress);
+                            } else {
+                                console.error('address hidden field not found in Tally form.');
+                            }
                         }
                     });
                 });
 
-                // Send initial data to Zapier if all fields are present
-                if (!sessionStorage.getItem('dataSent') && sessionStorage.getItem('emailAddress')) {
-                    sendToZapier();
-                    sessionStorage.setItem('dataSent', 'true');
+                // Set initial address
+                const addressField = document.querySelector('input[name="address"]');
+                if (addressField) {
+                    addressField.value = address;
+                    console.log('Set address hidden field to:', address);
+                } else {
+                    console.error('address hidden field not found in Tally form.');
                 }
             } else {
                 console.error("Geocode failed:", status);
             }
         });
-    }
-
-    function sendToZapier() {
-        const email = sessionStorage.getItem('emailAddress');
-        const address = sessionStorage.getItem('address');
-        const electricBill = sessionStorage.getItem('electricBill') || '380';
-
-        if (!email) {
-            console.error('No emailAddress. Webhook skipped.');
-            return;
-        }
-
-        const payload = {
-            'Email Address': email,
-            'Address': address,
-            'Electric Bill': electricBill
-        };
-        const webhookURL = 'https://hooks.zapier.com/hooks/catch/21358037/2qmn180/'; // Your Zapier webhook URL
-        fetch(webhookURL, {
-            method: 'POST',
-            body: JSON.stringify(payload),
-            headers: { 'Content-Type': 'application/json' }
-        })
-        .then(() => console.log('Webhook sent:', payload))
-        .catch(error => console.error('Webhook error:', error));
     }
 
     window.onload = () => {
