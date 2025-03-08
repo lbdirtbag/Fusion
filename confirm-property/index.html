@@ -78,51 +78,71 @@
     </div>
 
     <script>
+    // Retrieve address from Tally's hidden form inputs
+    let addressFromTally = null;
+    const addressInput = document.querySelector('input[name="Address"]') || document.querySelector('input[name="@Address"]');
+    if (addressInput && addressInput.value) {
+        addressFromTally = addressInput.value;
+        console.log('Address retrieved from Tally form input:', addressFromTally);
+    }
+
+    // Fallback to URL parameter (if previously used)
+    if (!addressFromTally) {
+        const urlParams = new URLSearchParams(window.location.search);
+        addressFromTally = urlParams.get('address');
+        if (addressFromTally) addressFromTally = decodeURIComponent(addressFromTally);
+    }
+
+    // Final fallback if no address is found
+    if (!addressFromTally) {
+        console.error('No address found. Ensure the "Address" field is submitted before the embed.');
+        sessionStorage.setItem('address', '3042 E El Moro Ave, Mesa, AZ 85204, USA');
+    } else {
+        sessionStorage.setItem('address', addressFromTally);
+    }
+
+    console.log('Stored address:', sessionStorage.getItem('address'));
+
     let map, marker;
     function initMap() {
-        const address = sessionStorage.getItem('address') || 'Mesa, AZ';
-        document.getElementById("confirmed-address").innerText = address;
+        let address = sessionStorage.getItem('address') || 'Mesa, AZ';
+        document.getElementById('confirmed-address').innerText = address;
+
+        const addressInput = document.createElement('input');
+        addressInput.type = 'hidden';
+        addressInput.name = 'address';
+        addressInput.value = address;
+        document.body.appendChild(addressInput);
+        console.log('Hidden input added:', address);
 
         const geocoder = new google.maps.Geocoder();
-        geocoder.geocode({ address: address }, (results, status) => {
-            if (status === "OK") {
+        geocoder.geocode({ address }, (results, status) => {
+            if (status === 'OK') {
                 const location = results[0].geometry.location;
-                map = new google.maps.Map(document.getElementById("map"), {
-                    center: location,
-                    zoom: 18,
-                    mapTypeId: "satellite"
+                map = new google.maps.Map(document.getElementById('map'), {
+                    center: location, zoom: 18, mapTypeId: 'satellite'
                 });
-                marker = new google.maps.Marker({ position: location, map: map, draggable: true });
-
-                marker.addListener("dragend", () => {
-                    geocoder.geocode({ location: marker.getPosition() }, (results, status) => {
-                        if (status === "OK") {
-                            const newAddress = results[0].formatted_address;
+                marker = new google.maps.Marker({ position: location, map, draggable: true });
+                marker.addListener('dragend', () => {
+                    const newPos = marker.getPosition();
+                    geocoder.geocode({ location: newPos }, (results, status) => {
+                        if (status === 'OK') {
+                            let newAddress = results[0].formatted_address;
+                            document.getElementById('confirmed-address').innerText = newAddress;
+                            addressInput.value = newAddress;
                             sessionStorage.setItem('address', newAddress);
-                            document.getElementById("confirmed-address").innerText = newAddress;
-                            console.log('Updated address after drag:', newAddress);
-                            window.parent.postMessage({ address: newAddress }, '*');
-                            console.log('Sent address to parent via postMessage:', newAddress);
-                        }
+                            console.log('Dragged to:', newAddress);
+                        } else console.error('Geocode drag failed:', status);
                     });
                 });
-
-                window.parent.postMessage({ address: address }, '*');
-                console.log('Sent initial address to parent via postMessage:', address);
             } else {
-                console.error("Geocode failed:", status);
+                console.error('Initial geocode failed:', status);
+                document.getElementById('confirmed-address').innerText = 'Address not found';
             }
         });
     }
 
-    window.onload = () => {
-        if (typeof google === "undefined") {
-            console.error("Google Maps API not loaded. Retrying...");
-            setTimeout(initMap, 1000);
-        } else {
-            initMap();
-        }
-    };
+    window.onload = () => typeof google === 'undefined' ? setTimeout(initMap, 1000) : initMap();
 </script>
 </body>
 </html>
